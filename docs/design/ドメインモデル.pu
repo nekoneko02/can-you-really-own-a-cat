@@ -55,11 +55,11 @@ package "ユーザー (User)" as user {
   }
 
   ' 関連 '
-  UserProfile "1" --> "1" DesireLevel : has >
-  UserProfile "1" --> "0..*" Concern : has >
-  UserProfile "1" --> "1" MonthlyBudget : has >
-  UserProfile "1" --> "1" DailyFreeTime : has >
-  UserProfile "1" --> "1" HousingType : has >
+  UserProfile "1" --> "1" DesireLevel
+  UserProfile "1" --> "0..*" Concern
+  UserProfile "1" --> "1" MonthlyBudget
+  UserProfile "1" --> "1" DailyFreeTime
+  UserProfile "1" --> "1" HousingType
 }
 
 ' ====================================================================
@@ -77,10 +77,10 @@ package "ねこ (Cat)" as cat {
   class "Hunger\n(空腹度)" as Hunger <<ValueObject>>
 
   ' 関連 '
-  Cat "1" --> "1" AffectionLevel : has >
-  Cat "1" --> "1" StressLevel : has >
-  Cat "1" --> "1" Health : has >
-  Cat "1" --> "1" Hunger : has >
+  Cat "1" --> "1" AffectionLevel
+  Cat "1" --> "1" StressLevel
+  Cat "1" --> "1" Health
+  Cat "1" --> "1" Hunger
 }
 
 ' ====================================================================
@@ -124,45 +124,27 @@ package "ゲーム (Game)" as game {
   class "GameFlowService\n(ゲーム進行サービス)" as GameFlowService <<DomainService>>
 
   ' ====================================================================
-  ' 3-2. シナリオ（Compositeパターンで階層構造を表現）
+  ' 3-2. シナリオ
   ' ====================================================================
   package "シナリオ (Scenario)" as scenario {
-    ' 抽象クラス
-    abstract class "Scenario\n(シナリオ)" as Scenario <<Entity>>
+    ' シナリオ（集約ルート）
+    class "Scenario\n(シナリオ)" as Scenario <<Entity>>
+
+    class "ScenarioName\n(シナリオ名)" as ScenarioName <<ValueObject>>
+
+    class "ScenarioPurpose\n(シナリオの目的Why)" as ScenarioPurpose <<ValueObject>>
 
     enum "ScenarioDuration\n(シナリオ期間)" as ScenarioDuration <<ValueObject>> {
       OneWeek = 7
       OneMonth = 30
     }
 
-    ' 具象クラス（Composite - 子を持つノード）
-    class "SequenceScenario\n(順序シナリオ)" as SequenceScenario <<Entity>>
-
-    class "BranchScenario\n(分岐シナリオ)" as BranchScenario <<Entity>>
-
-    class "BranchCondition\n(分岐条件)" as BranchCondition <<ValueObject>>
-
-    ' 具象クラス（Leaf - 葉ノード）
-    class "EventScenario\n(イベントシナリオ)" as EventScenario <<Entity>>
-
-    class "EndScenario\n(終了シナリオ)" as EndScenario <<Entity>>
-
-    ' 継承関係
-    Scenario <|-- SequenceScenario
-    Scenario <|-- BranchScenario
-    Scenario <|-- EventScenario
-    Scenario <|-- EndScenario
-
-    ' 関連
-    Scenario "1" --> "1" ScenarioDuration : has >
-    SequenceScenario "1" --> "0..*" Scenario : children >
-    BranchScenario "1" --> "1" BranchCondition : condition >
-    BranchScenario "1" --> "1..*" Scenario : branches >
-
-    ' ====================================================================
-    ' イベント実行
-    ' ====================================================================
+    ' イベント（シナリオに含まれる）
     class "Event\n(イベント)" as Event <<Entity>>
+
+    class "EventTitle\n(イベントタイトル)" as EventTitle <<ValueObject>>
+
+    class "EventDescription\n(イベント詳細)" as EventDescription <<ValueObject>>
 
     class "Choice\n(選択肢)" as Choice <<ValueObject>>
 
@@ -170,35 +152,41 @@ package "ゲーム (Game)" as game {
 
     class "ParameterChange\n(パラメータ変化)" as ParameterChange <<ValueObject>>
 
-    ' 関連 '
-    EventScenario ..> Event : creates >
-    Event "1" --> "1" Turn : occursAt >
-    Event "1" --> "1..*" Choice : has >
-    Event "0..1" --> "0..1" ItemPurchase : requires >
+    ' シナリオの関連
+    Scenario "1" --> "1" ScenarioName
+    Scenario "1" --> "1" ScenarioPurpose
+    Scenario "1" --> "1" ScenarioDuration
+    Scenario "1" --> "1..*" Event
 
-    Event ..> EventResult : creates >
-    EventResult "1" --> "0..*" ParameterChange : contains >
+    ' イベントの構造
+    Event "1" --> "1" EventTitle
+    Event "1" --> "1" EventDescription
+    Event "1" --> "1" Turn
+    Event "1" --> "1..*" Choice
+    Event "0..1" --> "0..1" ItemPurchase
+
+    ' イベント実行結果
+    Event ..> EventResult
+    EventResult "1" --> "0..*" ParameterChange
   }
 
   ' ====================================================================
   ' ゲーム進行管理の関連
   ' ====================================================================
-  GameSession "1" --> "1" Scenario : rootScenario >
-  GameSession "1" --> "1" Scenario : currentScenario >
-  GameSession "1" --> "1" Turn : currentTurn >
-  GameSession "1" --> "0..*" Event : eventHistory >
-  GameSession "1" --> "1" PlayerState : tracks >
-  GameSession "1" --> "1" RoomCleanliness : tracks >
-  GameSession "1" --> "1" TotalCost : tracks >
+  GameSession "1" --> "1" Scenario
+  GameSession "1" --> "1" Turn
+  GameSession "1" --> "1" PlayerState
+  GameSession "1" --> "1" RoomCleanliness
+  GameSession "1" --> "1" TotalCost
 
   ' プレイヤー状態の内部構造
-  PlayerState "1" --> "1" PlayerStress : has >
-  PlayerState "1" --> "1" PlayerFatigue : has >
-  PlayerState "1" --> "1" PlayerEnergy : has >
+  PlayerState "1" --> "1" PlayerStress
+  PlayerState "1" --> "1" PlayerFatigue
+  PlayerState "1" --> "1" PlayerEnergy
 
-  Cost "1" --> "1" CostCategory : has >
+  Cost "1" --> "1" CostCategory
 
-  ItemPurchase "1" --> "1" Cost : has >
+  ItemPurchase "1" --> "1" Cost
 
   GameFlowService ..> GameSession
   GameFlowService ..> Event
@@ -222,10 +210,10 @@ package "コンテンツ管理 (ContentManagement)" as content {
   class "ChoiceText\n(選択肢テキスト)" as ChoiceText <<ValueObject>>
 
   ' 関連 '
-  EventContent "1" --> "1" TextContent : has >
-  EventContent "1" --> "0..1" VisualContent : has >
-  EventContent "1" --> "0..1" AudioContent : has >
-  EventContent "1" --> "1..*" ChoiceText : has >
+  EventContent "1" --> "1" TextContent
+  EventContent "1" --> "0..1" VisualContent
+  EventContent "1" --> "0..1" AudioContent
+  EventContent "1" --> "1..*" ChoiceText
 }
 
 ' ====================================================================
@@ -244,8 +232,8 @@ package "データ分析 (DataAnalytics)" as analytics {
   }
 
   ' 関連 '
-  PlayLog "1" --> "0..*" LogEntry : contains >
-  PlayLog "1" --> "1" CompletionStatus : has >
+  PlayLog "1" --> "0..*" LogEntry
+  PlayLog "1" --> "1" CompletionStatus
 }
 
 ' ====================================================================
@@ -256,15 +244,15 @@ package "データ分析 (DataAnalytics)" as analytics {
 ' ====================================================================
 
 ' ゲームセッション → ユーザー（セッションのみ、永続化しない）
-GameSession ..> UserProfile : references by userId (session only)
+GameSession ..> UserProfile
 
 ' ゲームセッション → ねこ（ID参照）
-GameSession --> Cat : manages by catId
+GameSession --> Cat
 
-' イベントシナリオ → イベントコンテンツ（ID参照）
-EventScenario ..> EventContent : references by eventContentId
+' イベント → イベントコンテンツ（ID参照）
+Event ..> EventContent
 
 ' データ分析 → ゲームセッション（ID参照）
-PlayLog --> GameSession : references by sessionId
+PlayLog --> GameSession
 
 @enduml
