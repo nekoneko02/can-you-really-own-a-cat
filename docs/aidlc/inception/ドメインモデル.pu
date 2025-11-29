@@ -1,0 +1,270 @@
+@startuml 君はねこを飼えるか？_クラス図
+
+' ====================================================================
+' ドメインモデルのガイドライン
+' ====================================================================
+' 1. 基本原則
+'    - サブドメイン境界をまたぐ関連は原則禁止
+'    - サブドメイン間でクラスを関連線でつなげない
+'    - 別サブドメインのオブジェクトを直接参照しない
+'    理由：結合が強くなり、独立性が失われるため
+'
+' 2. 例外条件
+'    - 集約ルート同士は関連を描いてよい
+'    - ただし関連はあくまで「概念的な関係」を示すだけ
+'    - 実際の接続方法（ID参照／API／DTO）はモデルに書かない
+'
+' 3. 属性とメソッドの表現
+'    - 原則、属性とメソッドは書かない
+'    - 必要に応じて、属性をドメインモデル（クラス）として明示的に表現する
+'    - 実装の詳細ではなく、ドメインの構造を表現することに集中する
+' ====================================================================
+
+' ====================================================================
+' 1. ユーザーサブドメイン（User Domain）
+' ====================================================================
+package "ユーザー (User)" as user {
+  class "UserProfile\n(ユーザープロファイル)" as UserProfile <<Entity>>
+
+  enum "DesireLevel\n(飼いたい度合い)" as DesireLevel <<ValueObject>> {
+    VeryMuch = "非常に飼いたい"
+    Somewhat = "やや飼いたい"
+    Uncertain = "迷っている"
+    NotMuch = "あまり飼いたくない"
+  }
+
+  enum "Concern\n(不安事項)" as Concern <<ValueObject>> {
+    Time = "時間的負担"
+    Money = "経済的負担"
+    Housing = "住環境"
+    Sleep = "睡眠への影響"
+    Hygiene = "衛生面"
+    Freedom = "生活の自由度"
+    Other = "その他"
+  }
+
+  class "MonthlyBudget\n(月の自由予算)" as MonthlyBudget <<ValueObject>>
+
+  class "DailyFreeTime\n(1日の自由時間)" as DailyFreeTime <<ValueObject>>
+
+  enum "HousingType\n(住環境タイプ)" as HousingType <<ValueObject>> {
+    OwnedPetOk = "持ち家ペット可"
+    RentedPetOk = "賃貸ペット可"
+    RentedPetNg = "賃貸ペット不可"
+    Other = "その他"
+  }
+
+  ' 関連 '
+  UserProfile "1" --> "1" DesireLevel : has >
+  UserProfile "1" --> "0..*" Concern : has >
+  UserProfile "1" --> "1" MonthlyBudget : has >
+  UserProfile "1" --> "1" DailyFreeTime : has >
+  UserProfile "1" --> "1" HousingType : has >
+}
+
+' ====================================================================
+' 2. ねこサブドメイン（Cat Domain）
+' ====================================================================
+package "ねこ (Cat)" as cat {
+  class "Cat\n(ねこ)" as Cat <<Entity>>
+
+  class "AffectionLevel\n(なつき度)" as AffectionLevel <<ValueObject>>
+
+  class "StressLevel\n(ストレス度)" as StressLevel <<ValueObject>>
+
+  class "Health\n(健康度)" as Health <<ValueObject>>
+
+  class "Hunger\n(空腹度)" as Hunger <<ValueObject>>
+
+  ' 関連 '
+  Cat "1" --> "1" AffectionLevel : has >
+  Cat "1" --> "1" StressLevel : has >
+  Cat "1" --> "1" Health : has >
+  Cat "1" --> "1" Hunger : has >
+}
+
+' ====================================================================
+' 3. ゲームサブドメイン（Game Domain）
+' ====================================================================
+package "ゲーム (Game)" as game {
+
+  ' ====================================================================
+  ' 3-1. ゲーム進行管理
+  ' ====================================================================
+  class "GameSession\n(ゲームセッション)" as GameSession <<Entity>>
+
+  class "Turn\n(ターン)" as Turn <<ValueObject>>
+
+  class "PlayerState\n(プレイヤー状態)" as PlayerState <<ValueObject>>
+
+  class "PlayerStress\n(プレイヤーストレス)" as PlayerStress <<ValueObject>>
+
+  class "PlayerFatigue\n(プレイヤー疲労度)" as PlayerFatigue <<ValueObject>>
+
+  class "PlayerEnergy\n(プレイヤー体力)" as PlayerEnergy <<ValueObject>>
+
+  class "RoomCleanliness\n(部屋の清潔度)" as RoomCleanliness <<ValueObject>>
+
+  class "TotalCost\n(累積費用)" as TotalCost <<ValueObject>>
+
+  class "Cost\n(費用)" as Cost <<ValueObject>>
+
+  enum "CostCategory\n(費用種別)" as CostCategory <<ValueObject>> {
+    Food = "餌代"
+    Litter = "猫砂代"
+    Toy = "おもちゃ代"
+    Medical = "医療費"
+    Grooming = "美容費"
+    Other = "その他"
+  }
+
+  class "ItemPurchase\n(アイテム購入)" as ItemPurchase <<ValueObject>>
+
+  ' ドメインサービス '
+  class "GameFlowService\n(ゲーム進行サービス)" as GameFlowService <<DomainService>>
+
+  ' ====================================================================
+  ' 3-2. シナリオ（Compositeパターンで階層構造を表現）
+  ' ====================================================================
+  package "シナリオ (Scenario)" as scenario {
+    ' 抽象クラス
+    abstract class "Scenario\n(シナリオ)" as Scenario <<Entity>>
+
+    enum "ScenarioDuration\n(シナリオ期間)" as ScenarioDuration <<ValueObject>> {
+      OneWeek = 7
+      OneMonth = 30
+    }
+
+    ' 具象クラス（Composite - 子を持つノード）
+    class "SequenceScenario\n(順序シナリオ)" as SequenceScenario <<Entity>>
+
+    class "BranchScenario\n(分岐シナリオ)" as BranchScenario <<Entity>>
+
+    class "BranchCondition\n(分岐条件)" as BranchCondition <<ValueObject>>
+
+    ' 具象クラス（Leaf - 葉ノード）
+    class "EventScenario\n(イベントシナリオ)" as EventScenario <<Entity>>
+
+    class "EndScenario\n(終了シナリオ)" as EndScenario <<Entity>>
+
+    ' 継承関係
+    Scenario <|-- SequenceScenario
+    Scenario <|-- BranchScenario
+    Scenario <|-- EventScenario
+    Scenario <|-- EndScenario
+
+    ' 関連
+    Scenario "1" --> "1" ScenarioDuration : has >
+    SequenceScenario "1" --> "0..*" Scenario : children >
+    BranchScenario "1" --> "1" BranchCondition : condition >
+    BranchScenario "1" --> "1..*" Scenario : branches >
+
+    ' ====================================================================
+    ' イベント実行
+    ' ====================================================================
+    class "Event\n(イベント)" as Event <<Entity>>
+
+    class "Choice\n(選択肢)" as Choice <<ValueObject>>
+
+    class "EventResult\n(イベント結果)" as EventResult <<ValueObject>>
+
+    class "ParameterChange\n(パラメータ変化)" as ParameterChange <<ValueObject>>
+
+    ' 関連 '
+    EventScenario ..> Event : creates >
+    Event "1" --> "1" Turn : occursAt >
+    Event "1" --> "1..*" Choice : has >
+    Event "0..1" --> "0..1" ItemPurchase : requires >
+
+    Event ..> EventResult : creates >
+    EventResult "1" --> "0..*" ParameterChange : contains >
+  }
+
+  ' ====================================================================
+  ' ゲーム進行管理の関連
+  ' ====================================================================
+  GameSession "1" --> "1" Scenario : rootScenario >
+  GameSession "1" --> "1" Scenario : currentScenario >
+  GameSession "1" --> "1" Turn : currentTurn >
+  GameSession "1" --> "0..*" Event : eventHistory >
+  GameSession "1" --> "1" PlayerState : tracks >
+  GameSession "1" --> "1" RoomCleanliness : tracks >
+  GameSession "1" --> "1" TotalCost : tracks >
+
+  ' プレイヤー状態の内部構造
+  PlayerState "1" --> "1" PlayerStress : has >
+  PlayerState "1" --> "1" PlayerFatigue : has >
+  PlayerState "1" --> "1" PlayerEnergy : has >
+
+  Cost "1" --> "1" CostCategory : has >
+
+  ItemPurchase "1" --> "1" Cost : has >
+
+  GameFlowService ..> GameSession
+  GameFlowService ..> Event
+  GameFlowService ..> Scenario
+}
+
+' ====================================================================
+' 4. コンテンツ管理サブドメイン（Content Management Domain）
+' ====================================================================
+' イラスト・音声・テキストなど、デザインチームが管理するコンテンツ
+' ====================================================================
+package "コンテンツ管理 (ContentManagement)" as content {
+  class "EventContent\n(イベントコンテンツ)" as EventContent <<Entity>>
+
+  class "TextContent\n(テキストコンテンツ)" as TextContent <<ValueObject>>
+
+  class "VisualContent\n(ビジュアルコンテンツ)" as VisualContent <<ValueObject>>
+
+  class "AudioContent\n(音声コンテンツ)" as AudioContent <<ValueObject>>
+
+  class "ChoiceText\n(選択肢テキスト)" as ChoiceText <<ValueObject>>
+
+  ' 関連 '
+  EventContent "1" --> "1" TextContent : has >
+  EventContent "1" --> "0..1" VisualContent : has >
+  EventContent "1" --> "0..1" AudioContent : has >
+  EventContent "1" --> "1..*" ChoiceText : has >
+}
+
+' ====================================================================
+' 5. データ分析サブドメイン（Data Analytics Domain）
+' ====================================================================
+' MVP段階では最小限の設計
+' ====================================================================
+package "データ分析 (DataAnalytics)" as analytics {
+  class "PlayLog\n(プレイログ)" as PlayLog <<Entity>>
+
+  class "LogEntry\n(ログエントリ)" as LogEntry <<ValueObject>>
+
+  enum "CompletionStatus\n(完了ステータス)" as CompletionStatus <<ValueObject>> {
+    Completed = "完了"
+    Abandoned = "途中離脱"
+  }
+
+  ' 関連 '
+  PlayLog "1" --> "0..*" LogEntry : contains >
+  PlayLog "1" --> "1" CompletionStatus : has >
+}
+
+' ====================================================================
+' サブドメイン間の依存関係（集約ルート同士のみ）
+' ====================================================================
+' 注意：以下の関連は「概念的な関係」を示すだけ
+' 実装ではID参照、API呼び出し、DTOなどを使用する
+' ====================================================================
+
+' ゲームセッション → ユーザー（セッションのみ、永続化しない）
+GameSession ..> UserProfile : references by userId (session only)
+
+' ゲームセッション → ねこ（ID参照）
+GameSession --> Cat : manages by catId
+
+' イベントシナリオ → イベントコンテンツ（ID参照）
+EventScenario ..> EventContent : references by eventContentId
+
+' データ分析 → ゲームセッション（ID参照）
+PlayLog --> GameSession : references by sessionId
+
+@enduml
