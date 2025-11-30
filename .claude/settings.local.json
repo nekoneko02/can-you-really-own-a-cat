@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)",
+      "Bash(NEXT_BUILD_DIR=.next_tmp npm run build:*)",
+      "Bash(git add:*)",
+      "mcp__next-devtools__nextjs_index",
+      "Bash(npm run dev:*)",
+      "mcp__next-devtools__browser_eval"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
