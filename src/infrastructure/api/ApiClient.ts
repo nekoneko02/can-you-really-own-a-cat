@@ -1,4 +1,4 @@
-import { CatState } from '../session/session';
+// CatState は新プロジェクトでは使用しない（セッション管理はNext.js側で行う）
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -67,18 +67,22 @@ export class ApiClient {
     }
   }
 
-  async getCatState(): Promise<ApiResponse<{ catState: CatState | null; catName: string | null }>> {
-    return this.request<{ catState: CatState | null; catName: string | null }>('/api/cat-state', {
+  // getCatState() と saveCatState() は新プロジェクトでは使用しない
+  // セッション管理は Next.js側（iron-session）で行う
+  /*
+  async getCatState(): Promise<ApiResponse<{ catState: any | null; catName: string | null }>> {
+    return this.request<{ catState: any | null; catName: string | null }>('/api/cat-state', {
       method: 'GET',
     });
   }
 
-  async saveCatState(catState: CatState): Promise<ApiResponse<{ success: boolean }>> {
+  async saveCatState(catState: any): Promise<ApiResponse<{ success: boolean }>> {
     return this.request<{ success: boolean }>('/api/cat-state', {
       method: 'POST',
       body: JSON.stringify({ catState }),
     });
   }
+  */
 
   async signUp(username: string, catName: string): Promise<ApiResponse<{ success: boolean }>> {
     return this.request<{ success: boolean }>('/api/auth/signup', {

@@ -1,0 +1,207 @@
+{
+  "cats": [
+    {
+      "key": "idle",
+      "frames": [
+        "/assets/cats/idle.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 2
+    },
+    {
+      "key": "showBelly",
+      "frames": [
+        "/assets/cats/showBelly_1.png",
+        "/assets/cats/showBelly_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 4
+    },
+    {
+      "key": "chase",
+      "frames": [
+        "/assets/cats/running_1.png",
+        "/assets/cats/running_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 8
+    },
+    {
+      "key": "play",
+      "frames": [
+        "/assets/cats/play_1.png",
+        "/assets/cats/play_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 8
+    },
+    {
+      "key": "sit",
+      "frames": [
+        "/assets/cats/sit_1.png",
+        "/assets/cats/sit_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 3
+    },
+    {
+      "key": "scared",
+      "frames": [
+        "/assets/cats/scared_1.png",
+        "/assets/cats/scared_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "running",
+      "frames": [
+        "/assets/cats/running_1.png",
+        "/assets/cats/running_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "escape",
+      "frames": [
+        "/assets/cats/escape_1.png",
+        "/assets/cats/escape_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "lieDown",
+      "frames": [
+        "/assets/cats/lieDown_1.png",
+        "/assets/cats/lieDown_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "cautious_watchFrontLeft",
+      "frames": [
+        "/assets/cats/cautious_watchFrontLeft.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "cautious_watchFrontRight",
+      "frames": [
+        "/assets/cats/cautious_watchFrontRight.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "cautious_watchBackLeft",
+      "frames": [
+        "/assets/cats/cautious_watchBackLeft.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "cautious_watchBackRight",
+      "frames": [
+        "/assets/cats/cautious_watchBackRight.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "watchWithTailWag_FrontLeft",
+      "frames": [
+        "/assets/cats/watchWithTailWag_FrontLeft_1.png",
+        "/assets/cats/watchWithTailWag_FrontLeft_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "watchWithTailWag_FrontRight",
+      "frames": [
+        "/assets/cats/watchWithTailWag_FrontRight_1.png",
+        "/assets/cats/watchWithTailWag_FrontRight_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "watchWithTailWag_BackLeft",
+      "frames": [
+        "/assets/cats/watchWithTailWag_BackLeft_1.png",
+        "/assets/cats/watchWithTailWag_BackLeft_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "watchWithTailWag_BackRight",
+      "frames": [
+        "/assets/cats/watchWithTailWag_BackRight_1.png",
+        "/assets/cats/watchWithTailWag_BackRight_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "watchToy",
+      "frames": [
+        "/assets/cats/watchToy_1.png",
+        "/assets/cats/watchToy_2.png",
+        "/assets/cats/watchToy_3.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 6
+    },
+    {
+      "key": "shrinkBack",
+      "frames": [
+        "/assets/cats/shrinkBack_1.png",
+        "/assets/cats/shrinkBack_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 4
+    },
+    {
+      "key": "walk",
+      "frames": [
+        "/assets/cats/running_1.png",
+        "/assets/cats/running_2.png"
+      ],
+      "frameWidth": 528,
+      "frameHeight": 396,
+      "frameRate": 4
+    }
+  ],
+  "ui": [
+    {
+      "key": "game_heart_small",
+      "url": "/assets/icons/heart-small.svg",
+      "type": "image"
+    }
+  ]
+}
