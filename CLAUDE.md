@@ -31,138 +31,18 @@ AIは以下の場合に人間に質問・提案を行う:
 - 不明確な要件の明確化が必要な場合
 - リスクやセキュリティ上の懸念がある場合
 
----
-
-## 開発作業のタイミング別ガイド
-
-### 【最初に必ず読む】プロジェクト固有情報
-
-@docs/guidelines/01_project-context.md を読んでください。
-
-- プロジェクトの目的・背景
-- アーキテクチャ全体像（DDD + 3層構成）
-- 5つのドメイン（User, Cat, Game, ContentManagement, DataAnalytics）
-- ディレクトリ構成
-- このプロジェクト固有のルール（ログ、コメント、API呼び出し等）
+## ドメイン駆動開発
 
 **重要**: @docs/aidlc/inception/ドメインモデル.pu を必ず確認してください。
 
 ---
 
-### 【ドメイン層】エンティティ・値オブジェクトを追加する時
-
-@docs/guidelines/02_domain-layer.md を読んでください。
-
-- エンティティ vs 値オブジェクトの判断
-- エンティティ作成時のチェックリスト
-- 値オブジェクト作成時のチェックリスト（不変性、等価性、範囲制限）
-- モジュール公開ルール（index.ts + @internal）
-- ドメインモデル図の更新
-
-**実装後の必須作業**: @docs/aidlc/inception/ドメインモデル.pu を更新
-
----
-
-### 【ゲームロジック】シナリオ・イベント・状態管理を実装する時
-
-@docs/guidelines/03_game-logic.md を読んでください。
-
-- シナリオエンジン（Compositeパターン）
-- Event → EventResult → ParameterChange の流れ
-- ターン制の状態管理
-- セッション管理（iron-session）
-- 静的シナリオの原則
-
-**参考**: @docs/adr/ADR-0004_シナリオエンジンのスクラッチ開発.md
-
----
-
-### 【UI層】画面・コンポーネント・Phaserシーンを追加する時
-
-@docs/guidelines/04_ui-layer.md を読んでください。
-
-- Next.js ページ実装（App Router）
-- React コンポーネント実装
-- Phaser Scene 実装（ステートレス設計）
-- Next.js と Phaser の責務分担
-- API呼び出し（ApiClient 必須）
-
----
-
-### 【テスト】テストコードを書く時
-
-@docs/guidelines/05_testing.md を読んでください。
-
-- TDD原則（Red-Green-Refactor）
-- 単体テスト作成ガイドライン
-- 分岐網羅（C1カバレッジ）、境界値テスト
-- モックの作成方法
-- テストファイルの配置（`test/` ディレクトリ）
-
-**テスト対象**: ドメイン層のクラスは必須、UI層は対象外
-
----
-
-### 【コードレビュー時】確認観点
-
-@docs/guidelines/07_code-review.md を読んでください。
-
-- 各ガイドラインに沿っていることを確認
-- 商用品質の確保
-
-### 【PR作成・リリース前】必須チェック
-
-@docs/guidelines/06_releasing.md を読んでください。
-
-- ビルドチェック（`npm run build`, `npm test`, `npm run lint`）
-- ドメインモデル図との同期
-- デプロイ手順
-
----
-
-## 絶対に守るべきルール
-
-### 禁止事項
-
-1. **直接 `console.log()` 使用禁止** → `@/lib/log.ts` の構造化ログを使用
-2. **UI層から直接 `fetch()` 禁止** → `@/infrastructure/api/ApiClient.ts` のラッパー関数を使用
-3. **ファイル直指定での import 禁止** → `index.ts` 経由で import する（詳細は @docs/guidelines/02_domain-layer.md）
-4. **ドメイン層に外部依存を持ち込まない** → リポジトリインターフェースで抽象化
-5. **不要なコメント・ログの残存禁止** → what ではなく why を書く
-
 ### 必須事項
 
 1. **テストファースト（TDD）** → 実装の前にテストを書く
-2. **ドメインモデル図との同期** → public メソッド・`index.ts` 変更時は @docs/aidlc/inception/ドメインモデル.pu を更新
+2. **ドメインモデル図との同期** → public メソッド・`index.ts` 変更時は ドメインモデル.pu を更新
 3. **ビルドチェック** → PR 前に `npm run build` と `npm test` を実行
 4. **商用品質** → 不要な要素の削除、適切な型定義、エラーハンドリング
-
----
-
-## 参考資料
-
-### 設計ドキュメント（必読）
-
-- @docs/aidlc/inception/ドメインモデル.pu（最重要）
-- @docs/adr/ADR-0004_シナリオエンジンのスクラッチ開発.md
-
-### プロダクト仕様
-
-- @docs/product/君はねこを飼えるか/README.md
-- @docs/product/君はねこを飼えるか/機能一覧.md
-
----
-
-## 開発フロー（TDD + DDD）
-
-1. タスクを受ける
-2. 該当するガイドラインを読む
-3. テストを書く（TDD: Red）
-4. 実装する（TDD: Green）
-5. リファクタリング（TDD: Refactor）
-6. ドメインモデル図を更新（必要な場合）
-7. ビルドチェック（`npm run build`, `npm test`）
-8. PR作成
 
 ---
 
