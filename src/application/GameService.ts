@@ -17,28 +17,26 @@ export class GameService {
   }
 
   /**
-   * シナリオから現在のイベントを取得する
+   * セッションの現在のターンに対応するイベントを取得する
    */
-  getCurrentEvent(scenario: Scenario, turn: number): Event | undefined {
-    // ターン番号に基づいてイベントを取得
-    // MVP: 各シナリオは3イベント（ターン1,2,3）
-    const eventIndex = turn - 1;
+  getCurrentEvent(scenario: Scenario, session: GameSession): Event | undefined {
+    // セッションから現在のターンを取得してイベントを返す
+    const eventIndex = session.currentTurn - 1;
     return scenario.events[eventIndex];
   }
 
   /**
-   * 次のターンに進む
+   * 次のターンに進めた新しいセッションを返す（不変性）
    */
   advanceToNextTurn(session: GameSession): GameSession {
-    session.advanceTurn();
-    return session;
+    return session.advanceTurn();
   }
 
   /**
-   * シナリオが完了したかチェック
+   * セッションのターン数でシナリオが完了したかチェック
    */
-  isScenarioComplete(scenario: Scenario, turn: number): boolean {
-    return turn > scenario.events.length;
+  isScenarioComplete(scenario: Scenario, session: GameSession): boolean {
+    return session.currentTurn > scenario.events.length;
   }
 
   /**

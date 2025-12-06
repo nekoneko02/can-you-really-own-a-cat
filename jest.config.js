@@ -5,16 +5,61 @@ const createJestConfig = nextJest({
 })
 
 const customJestConfig = {
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testEnvironment: 'jest-environment-jsdom',
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-  },
-  roots: ['<rootDir>/test'],
-  testMatch: [
-    '<rootDir>/test/**/*.[jt]s?(x)',
-    '<rootDir>/test/**/?(*.)+(spec|test).[jt]s?(x)',
+  // 単体テストと統合テストで異なる環境を使用
+  projects: [
+    // 単体テスト（Domain層、Application層、Presentation層、Infrastructure層）
+    {
+      displayName: 'unit',
+      testEnvironment: 'jest-environment-jsdom',
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      testMatch: [
+        '<rootDir>/test/domain/**/*.test.[jt]s?(x)',
+        '<rootDir>/test/application/**/*.test.[jt]s?(x)',
+        '<rootDir>/test/presentation/**/*.test.[jt]s?(x)',
+        '<rootDir>/test/infrastructure/**/*.test.[jt]s?(x)',
+      ],
+      collectCoverageFrom: [
+        'src/domain/**/*.{js,jsx,ts,tsx}',
+        'src/application/**/*.{js,jsx,ts,tsx}',
+        'src/presentation/**/*.{js,jsx,ts,tsx}',
+        'src/infrastructure/**/*.{js,jsx,ts,tsx}',
+        '!src/**/*.d.ts',
+      ],
+      // Next.jsのSWCトランスフォーマーを明示的に使用
+      transform: {
+        '^.+\\.(t|j)sx?$': ['next/dist/build/swc/jest-transformer', {}],
+      },
+    },
+    // 統合テスト（API Route）
+    {
+      displayName: 'integration',
+      testEnvironment: '@edge-runtime/jest-environment',
+      setupFilesAfterEnv: ['<rootDir>/test/integration/setup.js'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      testMatch: ['<rootDir>/test/integration/**/*.test.[jt]s?(x)'],
+      collectCoverageFrom: [
+        'src/app/api/**/*.{js,jsx,ts,tsx}',
+        'src/infrastructure/**/*.{js,jsx,ts,tsx}',
+        '!src/**/*.d.ts',
+      ],
+      // Next.jsのSWCトランスフォーマーを明示的に使用
+      transform: {
+        '^.+\\.(t|j)sx?$': ['next/dist/build/swc/jest-transformer', {}],
+        '^.+\\.mjs$': ['next/dist/build/swc/jest-transformer', {}],
+      },
+      // ESMモジュールも変換対象に含める
+      transformIgnorePatterns: [
+        'node_modules/(?!(uncrypto|iron-session)/)',
+      ],
+    },
   ],
+
+  // 全体のカバレッジ設定
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
@@ -32,4 +77,5 @@ const customJestConfig = {
   },
 }
 
+// createJestConfig を使うことで、Next.jsのトランスフォーマーが自動設定される
 module.exports = createJestConfig(customJestConfig)

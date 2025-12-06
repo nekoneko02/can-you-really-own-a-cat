@@ -37,4 +37,11 @@ export class Event {
   getResult(choiceId: string): EventResult | undefined {
     return this._results.get(choiceId);
   }
+
+  /**
+   * 選択肢IDからChoiceオブジェクトを取得
+   */
+  getChoiceById(choiceId: string): Choice | undefined {
+    return this._choices.find((choice) => choice.id === choiceId);
+  }
 }

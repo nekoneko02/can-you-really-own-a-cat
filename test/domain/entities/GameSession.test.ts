@@ -56,7 +56,7 @@ describe('GameSession', () => {
   });
 
   describe('advanceTurn', () => {
-    it('正常系: ターンを進められる', () => {
+    it('正常系: ターンを進めた新しいセッションを返す（不変性）', () => {
       const cat = Cat.createDefault();
       const scenario = new Scenario(
         'scenario-1',
@@ -68,9 +68,16 @@ describe('GameSession', () => {
 
       const session = new GameSession('session-1', cat.id, scenario.id, 1);
 
-      session.advanceTurn();
+      const newSession = session.advanceTurn();
 
-      expect(session.currentTurn).toBe(2);
+      // 元のセッションは変更されない
+      expect(session.currentTurn).toBe(1);
+      // 新しいセッションはターンが進んでいる
+      expect(newSession.currentTurn).toBe(2);
+      // その他の属性は同じ
+      expect(newSession.id).toBe(session.id);
+      expect(newSession.catId).toBe(session.catId);
+      expect(newSession.scenarioId).toBe(session.scenarioId);
     });
 
     it('正常系: 複数回ターンを進められる', () => {
@@ -85,11 +92,16 @@ describe('GameSession', () => {
 
       const session = new GameSession('session-1', cat.id, scenario.id, 1);
 
-      session.advanceTurn();
-      session.advanceTurn();
-      session.advanceTurn();
+      const session2 = session.advanceTurn();
+      const session3 = session2.advanceTurn();
+      const session4 = session3.advanceTurn();
 
-      expect(session.currentTurn).toBe(4);
+      // 元のセッションは変更されない
+      expect(session.currentTurn).toBe(1);
+      // 各セッションは正しいターン数を持つ
+      expect(session2.currentTurn).toBe(2);
+      expect(session3.currentTurn).toBe(3);
+      expect(session4.currentTurn).toBe(4);
     });
   });
 });

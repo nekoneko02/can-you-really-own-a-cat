@@ -1,6 +1,6 @@
 import { GameService } from '@/application/GameService';
 import { Cat } from '@/domain/cat';
-import { Event } from '@/domain/game';
+import { Event, GameSession, Scenario, ScenarioName, ScenarioPurpose } from '@/domain/game';
 import { Choice } from '@/domain/game';
 import { EventDescription } from '@/domain/game';
 import { EventResult } from '@/domain/game';
@@ -10,10 +10,44 @@ import { ParameterChange } from '@/domain/game';
 describe('GameService', () => {
   let gameService: GameService;
   let cat: Cat;
+  let session: GameSession;
+  let scenario: Scenario;
 
   beforeEach(() => {
     gameService = new GameService();
     cat = Cat.createDefault('test-cat', 'たま');
+
+    const event1 = new Event(
+      'event1',
+      new EventTitle('イベント1'),
+      new EventDescription('説明1'),
+      [],
+      new Map()
+    );
+    const event2 = new Event(
+      'event2',
+      new EventTitle('イベント2'),
+      new EventDescription('説明2'),
+      [],
+      new Map()
+    );
+    const event3 = new Event(
+      'event3',
+      new EventTitle('イベント3'),
+      new EventDescription('説明3'),
+      [],
+      new Map()
+    );
+
+    scenario = new Scenario(
+      'test-scenario',
+      new ScenarioName('テストシナリオ'),
+      new ScenarioPurpose('テスト用途'),
+      3,
+      [event1, event2, event3]
+    );
+
+    session = new GameSession('test-session', cat.id, scenario.id, 1);
   });
 
   describe('executeChoice', () => {
@@ -107,6 +141,46 @@ describe('GameService', () => {
       expect(() => {
         gameService.executeChoice(cat, event, 'invalid-choice');
       }).toThrow('Invalid choice ID: invalid-choice');
+    });
+  });
+
+  describe('getCurrentEvent', () => {
+    it('セッションの現在のターンに対応するイベントを取得できる', () => {
+      const event = gameService.getCurrentEvent(scenario, session);
+      expect(event).toBeDefined();
+      expect(event?.id).toBe('event1');
+    });
+
+    it('ターン2のイベントを取得できる', () => {
+      const session2 = session.advanceTurn();
+      const event = gameService.getCurrentEvent(scenario, session2);
+      expect(event).toBeDefined();
+      expect(event?.id).toBe('event2');
+    });
+
+    it('イベントが存在しない場合はundefinedを返す', () => {
+      const session4 = session.advanceTurn().advanceTurn().advanceTurn();
+      const event = gameService.getCurrentEvent(scenario, session4);
+      expect(event).toBeUndefined();
+    });
+  });
+
+  describe('advanceToNextTurn', () => {
+    it('新しいセッションを返す（不変性）', () => {
+      const newSession = gameService.advanceToNextTurn(session);
+      expect(session.currentTurn).toBe(1); // 元のセッションは変更されない
+      expect(newSession.currentTurn).toBe(2);
+    });
+  });
+
+  describe('isScenarioComplete', () => {
+    it('ターン数がイベント数以下の場合はfalseを返す', () => {
+      expect(gameService.isScenarioComplete(scenario, session)).toBe(false);
+    });
+
+    it('ターン数がイベント数を超えた場合はtrueを返す', () => {
+      const session4 = session.advanceTurn().advanceTurn().advanceTurn();
+      expect(gameService.isScenarioComplete(scenario, session4)).toBe(true);
     });
   });
 });

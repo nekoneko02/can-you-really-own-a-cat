@@ -81,4 +81,35 @@ describe('Event', () => {
     );
     expect(event.getResult('invalid-choice')).toBeUndefined();
   });
+
+  it('選択肢IDからChoiceオブジェクトを取得できる', () => {
+    const choices = [
+      new Choice('choice1', '餌をやる'),
+      new Choice('choice2', '無視する'),
+    ];
+
+    const event = new Event(
+      'event1',
+      new EventTitle('朝の餌やり'),
+      new EventDescription('猫がお腹を空かせて鳴いている'),
+      choices,
+      new Map()
+    );
+
+    const choice = event.getChoiceById('choice1');
+    expect(choice).toBeDefined();
+    expect(choice?.id).toBe('choice1');
+    expect(choice?.text).toBe('餌をやる');
+  });
+
+  it('存在しない選択肢IDの場合getChoiceByIdはundefinedを返す', () => {
+    const event = new Event(
+      'event1',
+      new EventTitle('テストイベント'),
+      new EventDescription('テスト説明'),
+      [],
+      new Map()
+    );
+    expect(event.getChoiceById('invalid-choice')).toBeUndefined();
+  });
 });

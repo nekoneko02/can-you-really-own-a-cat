@@ -1,21 +1,18 @@
 /**
- * ゲームセッションエンティティ
+ * ゲームセッションエンティティ（値オブジェクト）
  * 1回のプレイセッションを表す
+ * 不変性を保つため、すべてのプロパティはreadonlyで管理
  */
 export class GameSession {
-  private _currentTurn: number;
-
   constructor(
     private readonly _id: string,
     private readonly _catId: string,
     private readonly _scenarioId: string,
-    currentTurn: number
+    private readonly _currentTurn: number
   ) {
-    if (currentTurn <= 0) {
+    if (_currentTurn <= 0) {
       throw new Error('ターンは1以上にしてください');
     }
-
-    this._currentTurn = currentTurn;
   }
 
   get id(): string {
@@ -35,9 +32,14 @@ export class GameSession {
   }
 
   /**
-   * ターンを1つ進める
+   * ターンを1つ進めた新しいセッションを返す（不変性）
    */
-  advanceTurn(): void {
-    this._currentTurn++;
+  advanceTurn(): GameSession {
+    return new GameSession(
+      this._id,
+      this._catId,
+      this._scenarioId,
+      this._currentTurn + 1
+    );
   }
 }
