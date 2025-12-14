@@ -1,0 +1,285 @@
+@startuml ToBeクラス図_v3_Reactチーム
+
+title React層クラス図（MVP）- Next.js/Reactチーム担当
+
+' ===========================
+' Next.js/Reactチームの担当範囲
+' ===========================
+' - React Layer（GameLauncher, ReportPage）
+' - ゲーム前後のWebアプリケーション部分
+' - ゲーム起動パラメータの準備
+' - ゲーム結果の受け取りと表示
+' ===========================
+
+' ===========================
+' React Layer - Webアプリ層
+' ===========================
+
+package "React Layer" as PkgReact {
+  class GameLauncher {
+    + startGame(scenarioId: string): void
+    + onGameComplete(result: GameResult): void
+  }
+
+  class ReportPage {
+    + result: GameResult
+    + render(): JSX.Element
+  }
+
+  interface GameStartParams {
+    scenarioId: string
+  }
+
+  interface GameResult {
+    scenarioId: string
+    completed: boolean
+    playerStats: PlayerStats
+    finalCatStatus: CatStatus
+    eventHistory: EventRecord[]
+    report: Report
+  }
+
+  interface Report {
+    playerBehaviorPattern: string
+    feedbackText: string
+    emotionLog: EmotionData[]
+  }
+
+  interface EventRecord {
+    eventId: string
+    day: number
+    choiceId: string
+    emotion: EmotionData
+    timestamp: number
+  }
+
+  interface EmotionData {
+    satisfaction: number
+    burden: number
+    comment?: string
+  }
+
+  interface PlayerStats {
+    totalSleepHours: number
+    interruptionCount: number
+    playCount: number
+  }
+
+  interface CatStatus {
+    affection: number
+    stress: number
+    health: number
+    hunger: number
+  }
+
+  GameLauncher --> GameStartParams : uses
+  GameLauncher --> GameResult : receives
+  GameLauncher ..> ReportPage : shows
+  GameResult --> PlayerStats
+  GameResult --> CatStatus
+  GameResult --> EventRecord
+  GameResult --> Report
+  Report --> EmotionData
+  EventRecord --> EmotionData
+}
+
+note top of PkgReact
+  【Reactチームの役割（MVP範囲）】
+  - ゲーム起動: Phaserを起動するだけ
+  - ゲーム後: 結果レポート表示
+
+  【将来拡張（MVP範囲外）】
+  - トップページ
+  - オンボーディング
+  - プレイ後アンケート
+  - 最終判断画面
+end note
+
+' ===========================
+' Phaserチームとの境界
+' ===========================
+
+package "Phaser Layer (Interface)" as PkgPhaserInterface {
+  class BootScene <<External>> {
+    + init(data: GameStartParams): void
+    + onGameEnd(): void
+  }
+
+  note right of BootScene
+    【Phaserチーム提供】
+    - init(): GameStartParamsを受け取る
+    - onGameEnd(): GameResultをReactに返す
+  end note
+}
+
+' ===========================
+' Domainチームとの境界
+' ===========================
+
+package "Domain Layer (Interface)" as PkgDomainInterface {
+  class Game <<External>> {
+    + generateReport(): GameResult
+  }
+
+  note right of Game
+    【Domainチーム提供】
+    - generateReport(): GameResultを生成
+    - 実装はDomainチームが担当
+  end note
+}
+
+' ===========================
+' パッケージ間の関係性
+' ===========================
+
+' React → Phaser (起動時のみ)
+PkgReact.GameLauncher ..> PkgPhaserInterface.BootScene : launches with GameStartParams
+
+' Phaser → React (終了時のみ)
+PkgPhaserInterface.BootScene ..> PkgReact.GameLauncher : callback with GameResult
+
+' Domain → React (データ提供)
+PkgDomainInterface.Game ..> PkgReact.GameResult : generates
+
+' ===========================
+' React Componentの詳細設計
+' ===========================
+
+package "React Components (詳細)" as PkgReactComponents {
+  class GameLauncherPage {
+    - phaserGame: Phaser.Game | null
+    + componentDidMount(): void
+    + componentWillUnmount(): void
+    + startPhaserGame(): void
+    + handleGameComplete(result: GameResult): void
+    + render(): JSX.Element
+  }
+
+  class ReportPage {
+    - result: GameResult
+    + calculateBehaviorPattern(): string
+    + generateFeedbackText(): string
+    + renderPlayerStats(): JSX.Element
+    + renderCatStatus(): JSX.Element
+    + renderEmotionLog(): JSX.Element
+    + render(): JSX.Element
+  }
+
+  GameLauncherPage --> GameStartParams
+  GameLauncherPage --> GameResult
+  GameLauncherPage ..> ReportPage : navigates to
+  ReportPage --> GameResult
+}
+
+note top of PkgReactComponents
+  【GameLauncherPageの責務】
+  - Phaserゲームインスタンスの生成・破棄
+  - GameStartParamsの準備
+  - ゲーム完了時のコールバック受け取り
+  - ReportPageへの遷移
+
+  【ReportPageの責務】
+  - GameResultの解析・表示
+  - プレイヤー行動パターンの判定
+  - フィードバックテキストの生成
+  - 統計データとの比較表示
+end note
+
+' ===========================
+' データフロー図
+' ===========================
+
+package "Data Flow" {
+  note as DataFlowNote
+    【ゲーム起動時のフロー】
+    1. GameLauncherPage: startPhaserGame()
+    2. GameStartParams作成 { scenarioId: "nightcry_01" }
+    3. Phaser.Game インスタンス生成
+    4. BootScene.init(GameStartParams)
+
+    【ゲーム終了時のフロー】
+    1. BootScene: ゲーム完了を検知
+    2. window.onGameComplete(GameResult) 呼び出し
+    3. GameLauncherPage: handleGameComplete(GameResult)
+    4. Phaser.Game インスタンス破棄
+    5. ReportPage へ遷移
+
+    【重要な設計原則】
+    - ゲーム中はReactとPhaserは直接やり取りしない
+    - 起動時・終了時のみデータ受け渡し
+    - Phaserが完全に独立して動作
+  end note
+}
+
+' ===========================
+' MVP範囲の画面一覧
+' ===========================
+
+package "MVP Screens" {
+  note as ScreenListNote
+    【MVP必須画面】
+    ✅ GameLauncherPage
+       - Phaserゲームを起動
+       - ローディング表示
+       - ゲーム完了後にReportPageへ
+
+    ✅ ReportPage
+       - プレイヤー行動パターン表示
+       - 猫の最終状態表示
+       - 感情ログ表示
+       - 統計データとの比較
+
+    【将来拡張（MVP範囲外）】
+    🔵 TopPage
+       - プロジェクト紹介
+       - ゲームへの期待値設定
+
+    🔵 OnboardingPage
+       - プロフィール入力
+       - 飼育に対する不安調査
+
+    🔵 SurveyPage
+       - プレイ後アンケート
+       - 行動変容の測定
+
+    🔵 FinalDecisionPage
+       - 最終判断の促進
+       - 外部リソースへの誘導
+  end note
+}
+
+' ===========================
+' 凡例
+' ===========================
+
+legend right
+  **凡例**
+  - <<External>>: 他チーム提供のクラス
+  - 実線矢印 (-->): 依存・保持
+  - 点線矢印 (..>): 使用・参照
+
+  **Next.js/Reactチームの担当範囲**
+  ✅ React Layer（GameLauncher, ReportPage）
+  ✅ TypeScript型定義（全インターフェース）
+  ✅ ゲーム前後のWebアプリケーション
+  ✅ Next.jsルーティング・ページ管理
+
+  **依存方向**
+  - React → Phaser（起動時・終了時のみ）
+  - React ← Domain（GameResult受け取り）
+
+  **重要な設計原則**
+  - ゲーム中はReactとPhaserは直接やり取りしない
+  - 起動時: GameStartParams渡し
+  - 終了時: GameResult受け取り
+  - Phaserは完全に独立して動作
+  - MVP範囲は最小限（起動と結果表示のみ）
+
+  **将来拡張**
+  - TopPage: プロジェクト紹介
+  - OnboardingPage: プロフィール入力
+  - SurveyPage: プレイ後アンケート
+  - FinalDecisionPage: 最終判断画面
+end legend
+
+@enduml
