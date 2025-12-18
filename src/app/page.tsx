@@ -34,7 +34,7 @@ export default function Home() {
         </div>
 
         <Link
-          href="/game"
+          href="/onboarding"
           className="inline-block bg-blue-500 text-white text-lg font-bold px-8 py-4 rounded-lg hover:bg-blue-600 transition-colors shadow-lg"
         >
           ゲームを始める

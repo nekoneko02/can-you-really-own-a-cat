@@ -20,12 +20,15 @@ const customJestConfig = {
         '<rootDir>/test/application/**/*.test.[jt]s?(x)',
         '<rootDir>/test/presentation/**/*.test.[jt]s?(x)',
         '<rootDir>/test/infrastructure/**/*.test.[jt]s?(x)',
+        '<rootDir>/test/phaser/**/*.test.[jt]s?(x)',
+        '<rootDir>/test/data/**/*.test.[jt]s?(x)',
       ],
       collectCoverageFrom: [
         'src/domain/**/*.{js,jsx,ts,tsx}',
         'src/application/**/*.{js,jsx,ts,tsx}',
         'src/presentation/**/*.{js,jsx,ts,tsx}',
         'src/infrastructure/**/*.{js,jsx,ts,tsx}',
+        'src/phaser/**/*.{js,jsx,ts,tsx}',
         '!src/**/*.d.ts',
       ],
       // Next.jsのSWCトランスフォーマーを明示的に使用

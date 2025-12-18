@@ -16,6 +16,17 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: false,
   },
+  // Phaser is client-side only - exclude from SSR
+  serverExternalPackages: ['phaser'],
+  // Empty turbopack config to silence webpack/turbopack conflict warning
+  turbopack: {},
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Exclude Phaser from server-side bundling
+      config.externals = [...(config.externals || []), 'phaser'];
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
