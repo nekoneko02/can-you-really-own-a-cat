@@ -138,6 +138,9 @@ export class BootScene extends Phaser.Scene {
     this.load.on('complete', () => {
       progressBar.destroy();
       progressBox.destroy();
+
+      // アニメーション生成
+      AssetLoader.createAnimations(this);
     });
   }
 
