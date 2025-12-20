@@ -10,6 +10,14 @@ import { Direction } from './types';
 // 移動速度（ピクセル単位）
 const MOVE_SPEED = 10;
 
+// 画面境界（ピクセル単位）
+const WORLD_BOUNDS = {
+  minX: 50,
+  maxX: 750,
+  minY: 50,
+  maxY: 550,
+};
+
 export interface PlayerParams {
   x?: number;
   y?: number;
@@ -33,26 +41,37 @@ export class Player {
    * @param direction 移動方向
    */
   public move(direction: Direction): void {
+    let newX = this.x;
+    let newY = this.y;
+
     switch (direction) {
       case Direction.UP:
-        this.y -= MOVE_SPEED;
+        newY -= MOVE_SPEED;
         this.currentAnimation = 'player_walk_up';
         break;
       case Direction.DOWN:
-        this.y += MOVE_SPEED;
+        newY += MOVE_SPEED;
         this.currentAnimation = 'player_walk_down';
         break;
       case Direction.LEFT:
-        this.x -= MOVE_SPEED;
+        newX -= MOVE_SPEED;
         this.currentAnimation = 'player_walk_left';
         break;
       case Direction.RIGHT:
-        this.x += MOVE_SPEED;
+        newX += MOVE_SPEED;
         this.currentAnimation = 'player_walk_right';
         break;
       case Direction.NONE:
         this.currentAnimation = 'player_idle';
         break;
+    }
+
+    // 画面境界チェック
+    if (newX >= WORLD_BOUNDS.minX && newX <= WORLD_BOUNDS.maxX) {
+      this.x = newX;
+    }
+    if (newY >= WORLD_BOUNDS.minY && newY <= WORLD_BOUNDS.maxY) {
+      this.y = newY;
     }
   }
 

@@ -34,6 +34,7 @@ export interface PlayerViewModel {
 }
 
 export interface CatViewModel {
+  name: string;
   x: number;
   y: number;
   state: CatState;

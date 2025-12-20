@@ -22,6 +22,7 @@ const MAX_DAYS = 7;
 
 export interface GameParams {
   scenarioId: string;
+  catName?: string;
 }
 
 export interface RecordEmotionParams {
@@ -51,7 +52,7 @@ export class Game {
     this.currentDay = 1;
     this.currentTime = 2200; // 22:00から開始
     this.player = new Player({ x: 100, y: 100 });
-    this.cat = new Cat({ x: 200, y: 200 });
+    this.cat = new Cat({ name: params.catName, x: 200, y: 200 });
     this.currentEvent = null;
     this.currentScenario = null;
     this.eventHistory = [];

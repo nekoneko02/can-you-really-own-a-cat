@@ -46,6 +46,11 @@ interface MockScene {
   textures: {
     get: jest.Mock;
   };
+  physics: {
+    add: {
+      existing: jest.Mock;
+    };
+  };
   sys: {
     game: {
       config: {
@@ -93,6 +98,17 @@ function createMockScene(): { scene: MockScene; sprite: MockSprite } {
     },
     textures: {
       get: jest.fn(() => mockTexture),
+    },
+    physics: {
+      add: {
+        existing: jest.fn(() => {
+          // 物理ボディをモック
+          (mockSprite as any).body = {
+            setCollideWorldBounds: jest.fn(),
+          };
+          return mockSprite;
+        }),
+      },
     },
     sys: {
       game: {

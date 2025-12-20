@@ -20,18 +20,27 @@ export class StatusDisplay {
   private y: number;
 
   private statusBars: Map<string, StatusBar> = new Map();
+  private catNameText?: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, x: number = 600, y: number = 20) {
     this.scene = scene;
     this.x = x;
     this.y = y;
 
-    // ステータスバーの定義
+    // 猫の名前表示（初期値は空）
+    this.catNameText = scene.add.text(x, y - 10, '', {
+      fontSize: '18px',
+      color: '#ffffff',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+    });
+
+    // ステータスバーの定義（猫の名前分だけ下にずらす）
     const configs: StatusBarConfig[] = [
-      { label: 'なつき度', icon: '❤️', color: 0xff6b9d, y: 0 },
-      { label: 'ストレス', icon: '😰', color: 0xffaa00, y: 30 },
-      { label: '健康度', icon: '💚', color: 0x4caf50, y: 60 },
-      { label: '空腹度', icon: '🍽️', color: 0xffd54f, y: 90 },
+      { label: 'なつき度', icon: '❤️', color: 0xff6b9d, y: 20 },
+      { label: 'ストレス', icon: '😰', color: 0xffaa00, y: 50 },
+      { label: '健康度', icon: '💚', color: 0x4caf50, y: 80 },
+      { label: '空腹度', icon: '🍽️', color: 0xffd54f, y: 110 },
     ];
 
     // ステータスバーを生成
@@ -51,8 +60,14 @@ export class StatusDisplay {
   /**
    * ステータスバーを更新
    * @param catStatus 猫のステータス
+   * @param catName 猫の名前（オプション）
    */
-  update(catStatus: CatStatus): void {
+  update(catStatus: CatStatus, catName?: string): void {
+    // 猫の名前を更新
+    if (catName && this.catNameText) {
+      this.catNameText.setText(`🐱 ${catName}`);
+    }
+
     // なつき度
     this.statusBars.get('なつき度')?.update(catStatus.affection);
 
@@ -70,6 +85,7 @@ export class StatusDisplay {
    * ステータス表示を破棄
    */
   destroy(): void {
+    this.catNameText?.destroy();
     this.statusBars.forEach((bar) => bar.destroy());
     this.statusBars.clear();
   }

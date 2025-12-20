@@ -12,13 +12,14 @@ import { PlayerInput, GameView, PlayerViewModel, CatViewModel } from './types';
 
 export interface GameControllerParams {
   scenarioId: string;
+  catName?: string;
 }
 
 export class GameController {
   private game: Game;
 
   constructor(params: GameControllerParams) {
-    this.game = new Game({ scenarioId: params.scenarioId });
+    this.game = new Game({ scenarioId: params.scenarioId, catName: params.catName });
   }
 
   /**
@@ -69,6 +70,7 @@ export class GameController {
     };
 
     const catViewModel: CatViewModel = {
+      name: cat.name,
       x: cat.x,
       y: cat.y,
       state: cat.state,

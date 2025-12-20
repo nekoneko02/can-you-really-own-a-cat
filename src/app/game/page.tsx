@@ -35,9 +35,13 @@ export default function GamePage() {
           };
           gameRef.current = new Phaser.Game(config);
 
-          // BootSceneにscenarioIdを渡す
+          // localStorageから猫の名前を取得
+          const catName = localStorage.getItem('catName') || 'たま';
+
+          // BootSceneにscenarioIdと猫の名前を渡す
           gameRef.current.scene.start('BootScene', {
             scenarioId: 'night_crying',
+            catName: catName,
           });
 
           setIsLoading(false);
@@ -132,6 +136,9 @@ export default function GamePage() {
               const { gameConfig } = await import('@/phaser/config');
               const { BootScene } = await import('@/phaser/scenes/BootScene');
 
+              // localStorageから猫の名前を取得
+              const catName = localStorage.getItem('catName') || 'たま';
+
               const config = {
                 ...gameConfig,
                 scene: [BootScene],
@@ -139,6 +146,7 @@ export default function GamePage() {
               gameRef.current = new Phaser.Game(config);
               gameRef.current.scene.start('BootScene', {
                 scenarioId: 'night_crying',
+                catName: catName,
               });
               setIsLoading(false);
             }}

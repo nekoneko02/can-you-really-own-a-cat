@@ -17,6 +17,7 @@ import { GameController } from '@/application/GameController';
  */
 export interface GameStartParams {
   scenarioId: string;
+  catName?: string;
   playerProfile?: {
     budget: number;
     freeTime: number;
@@ -43,6 +44,7 @@ export class BootScene extends Phaser.Scene {
     // GameControllerを初期化
     const gameController = new GameController({
       scenarioId: data.scenarioId,
+      catName: data.catName,
     });
 
     // Registryに登録（他のシーンから参照可能にする）

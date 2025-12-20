@@ -117,10 +117,9 @@ export class RoomScene extends Phaser.Scene {
       this.interactionManager.interact();
     }
 
-    // 入力があればGameControllerに送信
-    if (input) {
-      this.controller.tick(input);
-    }
+    // GameControllerに入力を送信（入力がない場合も空のオブジェクトを送る）
+    // これにより、ユーザーが移動しなくてもイベントトリガーが毎フレーム判定される
+    this.controller.tick(input || {});
 
     // GameControllerから最新状態を取得
     const gameView = this.controller.view();
@@ -298,6 +297,9 @@ export class RoomScene extends Phaser.Scene {
       // GameControllerに気持ちを記録
       this.controller['gameController'].recordEmotion(emotion);
 
+      // すぐに朝フェーズに遷移（イベント再発火を防ぐため）
+      this.controller['gameController']['game'].transitionToMorning();
+
       // 翌朝メッセージを表示
       this.showMorningMessage(gameView);
     });
@@ -312,10 +314,8 @@ export class RoomScene extends Phaser.Scene {
     const message = this.generateMorningMessage(gameView);
 
     this.morningMessageUI.show(message, () => {
-      console.log('[RoomScene] 朝フェーズに遷移します');
-
-      // 朝フェーズに遷移
-      this.controller['gameController']['game'].transitionToMorning();
+      console.log('[RoomScene] 朝メッセージを閉じました');
+      // フェーズ遷移は既にshowEmotionInput()で実行済み
     });
   }
 

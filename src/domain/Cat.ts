@@ -7,7 +7,16 @@
 
 import { CatState, CatMood, ToyType } from './types';
 
+// 画面境界（ピクセル単位）
+const WORLD_BOUNDS = {
+  minX: 50,
+  maxX: 750,
+  minY: 50,
+  maxY: 550,
+};
+
 export interface CatParams {
+  name?: string;
   x?: number;
   y?: number;
   state?: CatState;
@@ -15,6 +24,7 @@ export interface CatParams {
 }
 
 export class Cat {
+  public name: string;
   public x: number;
   public y: number;
   public state: CatState;
@@ -22,6 +32,7 @@ export class Cat {
   public currentAnimation: string;
 
   constructor(params: CatParams = {}) {
+    this.name = params.name ?? 'たま';
     this.x = params.x ?? 0;
     this.y = params.y ?? 0;
     this.state = params.state ?? CatState.SLEEPING;
@@ -52,8 +63,13 @@ export class Cat {
    * @param y Y座標
    */
   public moveTo(x: number, y: number): void {
-    this.x = x;
-    this.y = y;
+    // 画面境界チェック
+    if (x >= WORLD_BOUNDS.minX && x <= WORLD_BOUNDS.maxX) {
+      this.x = x;
+    }
+    if (y >= WORLD_BOUNDS.minY && y <= WORLD_BOUNDS.maxY) {
+      this.y = y;
+    }
     this.setState(CatState.WALKING);
   }
 

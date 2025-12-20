@@ -73,8 +73,8 @@ export class UIScene extends Phaser.Scene {
     // 進行状況を更新
     this.progressIndicator?.update(gameView.day, gameView.time, gameView.phase);
 
-    // ステータスバーを更新
-    this.statusDisplay?.update(gameView.catStatus);
+    // ステータスバーを更新（猫の名前も渡す）
+    this.statusDisplay?.update(gameView.catStatus, gameView.cat.name);
 
     // 気持ち入力待ち状態の場合はEventUIを非表示
     if (gameView.isWaitingForEmotionInput) {

@@ -38,6 +38,13 @@ export class PlayerCharacter {
     const scale = CharacterScaleCalculator.calculate(scene, textureKey, 0.2);
     this.sprite.setScale(scale);
 
+    // 物理ボディを追加（壁衝突判定のため）
+    scene.physics.add.existing(this.sprite);
+    const body = this.sprite.body as Phaser.Physics.Arcade.Body;
+    if (body) {
+      body.setCollideWorldBounds(true); // 画面外に出ないようにする
+    }
+
     // 初期アニメーション再生（安全）
     AnimationPlayer.play(this.sprite, scene, textureKey, '[PlayerCharacter]');
   }
