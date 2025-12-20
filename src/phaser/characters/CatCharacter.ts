@@ -2,13 +2,10 @@
  * CatCharacter
  *
  * 猫キャラクターの表示とアニメーション管理を担当します。
- * MVP版ではプレースホルダースプライト（オレンジ色矩形32x32px）を使用。
- * 状態に応じて色を変更します（仮実装）。
  */
 
 import Phaser from 'phaser';
 import { CatViewModel } from '@/application/types';
-import { CatState, CatMood } from '@/domain/types';
 
 /**
  * 猫キャラクタークラス
@@ -31,7 +28,16 @@ export class CatCharacter {
     textureKey: string
   ) {
     this.sprite = scene.add.sprite(x, y, textureKey);
-    this.sprite.setDisplaySize(32, 32); // 猫サイズ
+    this.sprite.setDepth(10); // キャラクターは前面に表示
+
+    // 画像サイズに依らず一定のサイズで表示
+    const scale = this.calculateScale(scene, textureKey);
+    this.sprite.setScale(scale);
+
+    // 初期アニメーションを再生
+    if (scene.anims.exists(textureKey)) {
+      this.sprite.play(textureKey);
+    }
   }
 
   /**
@@ -43,51 +49,59 @@ export class CatCharacter {
     // 位置を更新
     this.sprite.setPosition(viewModel.x, viewModel.y);
 
-    // 状態に応じた色変更（仮実装）
-    this.updateTint(viewModel.state, viewModel.mood);
-
-    // アニメーション更新（将来実装）
-    // TODO: viewModel.stateに基づいてアニメーションを再生
+    // アニメーション更新
+    this.updateAnimation(viewModel.animation);
   }
 
   /**
-   * 状態と気分に応じてティント（色）を変更
+   * アニメーションを更新
    *
-   * MVP版の仮実装として、状態・気分を視覚化します。
-   *
-   * @param state - 猫の状態
-   * @param mood - 猫の気分
+   * @param animationKey - 再生するアニメーションキー
    */
-  private updateTint(state: CatState, mood: CatMood): void {
-    // デフォルト: オレンジ色
-    let tint = 0xffa500;
+  private updateAnimation(animationKey: string): void {
+    // 現在再生中のアニメーションと異なる場合のみ切り替え
+    if (this.sprite.anims.currentAnim?.key !== animationKey) {
+      // アニメーションが存在するか確認
+      if (this.sprite.anims.exists(animationKey)) {
+        this.sprite.play(animationKey);
+      } else {
+        console.warn(
+          `[CatCharacter] アニメーション "${animationKey}" が存在しません`
+        );
+      }
+    }
+  }
 
-    // 気分に応じた色変更
-    switch (mood) {
-      case CatMood.HAPPY:
-        tint = 0xffff00; // 黄色（嬉しい）
-        break;
-      case CatMood.ANGRY:
-        tint = 0xff0000; // 赤色（怒っている）
-        break;
-      case CatMood.SCARED:
-        tint = 0x8b008b; // 紫色（怖がっている）
-        break;
-      case CatMood.SLEEPY:
-        tint = 0x4682b4; // 青色（眠い）
-        break;
-      case CatMood.NEUTRAL:
-      default:
-        tint = 0xffa500; // オレンジ色（普通）
-        break;
+  /**
+   * 画像サイズに依らず一定のサイズで表示するためのスケールを計算
+   *
+   * @param scene - Phaserシーン
+   * @param textureKey - テクスチャキー
+   * @returns スケール値
+   */
+  private calculateScale(scene: Phaser.Scene, textureKey: string): number {
+    // アニメーションの最初のフレームからテクスチャを取得
+    const frameKey = `${textureKey}_frame_0`;
+    let texture = scene.textures.get(frameKey);
+
+    // フレームが存在しない場合は、元のキーで試す
+    if (!texture || !texture.source || !texture.source[0]) {
+      texture = scene.textures.get(textureKey);
     }
 
-    // 状態が眠っている場合は暗くする
-    if (state === CatState.SLEEPING) {
-      tint = 0x696969; // 暗い灰色
+    const gameHeight = scene.sys.game.config.height as number;
+    const targetSizeRatio = 0.2; // ゲーム高さの20%（120px）
+    const targetSize = gameHeight * targetSizeRatio;
+    let scale = 1.0;
+
+    if (texture && texture.source && texture.source[0]) {
+      const originalWidth = texture.source[0].width;
+      const originalHeight = texture.source[0].height;
+      const maxDimension = Math.max(originalWidth, originalHeight);
+      scale = targetSize / maxDimension;
     }
 
-    this.sprite.setTint(tint);
+    return scale;
   }
 
   /**

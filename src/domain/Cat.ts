@@ -19,12 +19,14 @@ export class Cat {
   public y: number;
   public state: CatState;
   public mood: CatMood;
+  public currentAnimation: string;
 
   constructor(params: CatParams = {}) {
     this.x = params.x ?? 0;
     this.y = params.y ?? 0;
     this.state = params.state ?? CatState.SLEEPING;
     this.mood = params.mood ?? CatMood.NEUTRAL;
+    this.currentAnimation = this.getAnimationForState(this.state);
   }
 
   /**
@@ -33,6 +35,7 @@ export class Cat {
    */
   public setState(state: CatState): void {
     this.state = state;
+    this.currentAnimation = this.getAnimationForState(state);
   }
 
   /**
@@ -51,7 +54,7 @@ export class Cat {
   public moveTo(x: number, y: number): void {
     this.x = x;
     this.y = y;
-    this.state = CatState.WALKING;
+    this.setState(CatState.WALKING);
   }
 
   /**
@@ -59,7 +62,7 @@ export class Cat {
    * 猫は座った状態になり、不機嫌になる
    */
   public catch(): void {
-    this.state = CatState.SITTING;
+    this.setState(CatState.SITTING);
     this.mood = CatMood.ANGRY;
   }
 
@@ -68,7 +71,7 @@ export class Cat {
    * @param toyType おもちゃの種類
    */
   public playWith(toyType: ToyType): void {
-    this.state = CatState.PLAYING;
+    this.setState(CatState.PLAYING);
     this.mood = CatMood.HAPPY;
     // おもちゃの種類は将来的に猫の反応を変えるために使用可能
   }
@@ -77,7 +80,33 @@ export class Cat {
    * 猫を寝かせる
    */
   public sleep(): void {
-    this.state = CatState.SLEEPING;
+    this.setState(CatState.SLEEPING);
     this.mood = CatMood.SLEEPY;
+  }
+
+  /**
+   * 状態からアニメーションキーを取得
+   * @param state 猫の状態
+   * @returns アニメーションキー
+   */
+  private getAnimationForState(state: CatState): string {
+    switch (state) {
+      case CatState.SLEEPING:
+        return 'cat_sleeping';
+      case CatState.SITTING:
+        return 'cat_sitting';
+      case CatState.STANDING:
+        return 'cat_standing';
+      case CatState.WALKING:
+        return 'cat_walking';
+      case CatState.RUNNING:
+        return 'cat_running';
+      case CatState.PLAYING:
+        return 'cat_playing';
+      case CatState.MEOWING:
+        return 'cat_meowing';
+      default:
+        return 'cat_sitting';
+    }
   }
 }

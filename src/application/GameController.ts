@@ -73,6 +73,7 @@ export class GameController {
       y: cat.y,
       state: cat.state,
       mood: cat.mood,
+      animation: cat.currentAnimation,
     };
 
     return {

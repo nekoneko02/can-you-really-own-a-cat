@@ -14,6 +14,7 @@ describe('Cat', () => {
       expect(cat.y).toBe(0);
       expect(cat.state).toBe(CatState.SLEEPING);
       expect(cat.mood).toBe(CatMood.NEUTRAL);
+      expect(cat.currentAnimation).toBe('cat_sleeping');
     });
 
     it('should create Cat with custom values', () => {
@@ -28,6 +29,7 @@ describe('Cat', () => {
       expect(cat.y).toBe(200);
       expect(cat.state).toBe(CatState.SITTING);
       expect(cat.mood).toBe(CatMood.HAPPY);
+      expect(cat.currentAnimation).toBe('cat_sitting');
     });
   });
 
@@ -40,6 +42,23 @@ describe('Cat', () => {
 
       cat.setState(CatState.PLAYING);
       expect(cat.state).toBe(CatState.PLAYING);
+    });
+
+    it('should update currentAnimation when state changes', () => {
+      const cat = new Cat();
+      expect(cat.currentAnimation).toBe('cat_sleeping');
+
+      cat.setState(CatState.SITTING);
+      expect(cat.currentAnimation).toBe('cat_sitting');
+
+      cat.setState(CatState.WALKING);
+      expect(cat.currentAnimation).toBe('cat_walking');
+
+      cat.setState(CatState.RUNNING);
+      expect(cat.currentAnimation).toBe('cat_running');
+
+      cat.setState(CatState.PLAYING);
+      expect(cat.currentAnimation).toBe('cat_playing');
     });
   });
 
