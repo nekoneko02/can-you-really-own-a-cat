@@ -2,7 +2,7 @@
  * FoodBowl - 餌皿オブジェクト
  *
  * 猫の餌を置く場所。
- * MVP版はプレースホルダー（灰色矩形）で実装。
+ * 画像アセットが存在する場合はSpriteで表示、存在しない場合はGraphicsでフォールバック。
  */
 
 import { InteractiveObject } from '../InteractiveObject';
@@ -15,8 +15,9 @@ export class FoodBowl extends InteractiveObject {
       y,
       width: 32,
       height: 32,
-      color: 0x808080, // 灰色
+      color: 0xffd700, // 金色（フォールバック用、Issue #4に従い変更）
       radius: 50,
+      textureKey: 'food_bowl', // 画像アセットキー
     });
   }
 }
