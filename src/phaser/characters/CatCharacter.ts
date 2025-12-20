@@ -6,12 +6,15 @@
 
 import Phaser from 'phaser';
 import { CatViewModel } from '@/application/types';
+import { CharacterScaleCalculator } from '@/phaser/utils/CharacterScaleCalculator';
+import { AnimationPlayer } from '@/phaser/utils/AnimationPlayer';
 
 /**
  * 猫キャラクタークラス
  */
 export class CatCharacter {
   private sprite: Phaser.GameObjects.Sprite;
+  private scene: Phaser.Scene;
 
   /**
    * コンストラクタ
@@ -27,17 +30,16 @@ export class CatCharacter {
     y: number,
     textureKey: string
   ) {
+    this.scene = scene;
     this.sprite = scene.add.sprite(x, y, textureKey);
     this.sprite.setDepth(10); // キャラクターは前面に表示
 
-    // 画像サイズに依らず一定のサイズで表示
-    const scale = this.calculateScale(scene, textureKey);
+    // スケール計算（動的）
+    const scale = CharacterScaleCalculator.calculate(scene, textureKey, 0.2);
     this.sprite.setScale(scale);
 
-    // 初期アニメーションを再生
-    if (scene.anims.exists(textureKey)) {
-      this.sprite.play(textureKey);
-    }
+    // 初期アニメーション再生（安全）
+    AnimationPlayer.play(this.sprite, scene, textureKey, '[CatCharacter]');
   }
 
   /**
@@ -59,49 +61,7 @@ export class CatCharacter {
    * @param animationKey - 再生するアニメーションキー
    */
   private updateAnimation(animationKey: string): void {
-    // 現在再生中のアニメーションと異なる場合のみ切り替え
-    if (this.sprite.anims.currentAnim?.key !== animationKey) {
-      // アニメーションが存在するか確認
-      if (this.sprite.anims.exists(animationKey)) {
-        this.sprite.play(animationKey);
-      } else {
-        console.warn(
-          `[CatCharacter] アニメーション "${animationKey}" が存在しません`
-        );
-      }
-    }
-  }
-
-  /**
-   * 画像サイズに依らず一定のサイズで表示するためのスケールを計算
-   *
-   * @param scene - Phaserシーン
-   * @param textureKey - テクスチャキー
-   * @returns スケール値
-   */
-  private calculateScale(scene: Phaser.Scene, textureKey: string): number {
-    // アニメーションの最初のフレームからテクスチャを取得
-    const frameKey = `${textureKey}_frame_0`;
-    let texture = scene.textures.get(frameKey);
-
-    // フレームが存在しない場合は、元のキーで試す
-    if (!texture || !texture.source || !texture.source[0]) {
-      texture = scene.textures.get(textureKey);
-    }
-
-    const gameHeight = scene.sys.game.config.height as number;
-    const targetSizeRatio = 0.2; // ゲーム高さの20%（120px）
-    const targetSize = gameHeight * targetSizeRatio;
-    let scale = 1.0;
-
-    if (texture && texture.source && texture.source[0]) {
-      const originalWidth = texture.source[0].width;
-      const originalHeight = texture.source[0].height;
-      const maxDimension = Math.max(originalWidth, originalHeight);
-      scale = targetSize / maxDimension;
-    }
-
-    return scale;
+    AnimationPlayer.play(this.sprite, this.scene, animationKey, '[CatCharacter]');
   }
 
   /**

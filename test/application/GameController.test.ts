@@ -40,7 +40,7 @@ describe('GameController', () => {
 
       expect(view.player.x).toBe(100);
       expect(view.player.y).toBe(100);
-      expect(view.player.animation).toBe('idle');
+      expect(view.player.animation).toBe('player_idle');
       expect(view.player.hasToy).toBe(false);
     });
 
@@ -83,7 +83,7 @@ describe('GameController', () => {
       controller.tick({ interact: true });
 
       const view = controller.view();
-      expect(view.player.animation).toBe('interact');
+      expect(view.player.animation).toBe('player_interact');
     });
   });
 });

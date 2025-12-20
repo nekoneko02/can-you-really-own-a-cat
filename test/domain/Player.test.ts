@@ -12,7 +12,7 @@ describe('Player', () => {
 
       expect(player.x).toBe(0);
       expect(player.y).toBe(0);
-      expect(player.currentAnimation).toBe('idle');
+      expect(player.currentAnimation).toBe('player_idle');
       expect(player.hasToy).toBe(false);
     });
 
@@ -21,7 +21,7 @@ describe('Player', () => {
 
       expect(player.x).toBe(100);
       expect(player.y).toBe(200);
-      expect(player.currentAnimation).toBe('idle');
+      expect(player.currentAnimation).toBe('player_idle');
       expect(player.hasToy).toBe(false);
     });
   });
@@ -33,7 +33,7 @@ describe('Player', () => {
 
       expect(player.x).toBe(100);
       expect(player.y).toBe(90); // y - 10
-      expect(player.currentAnimation).toBe('walk_up');
+      expect(player.currentAnimation).toBe('player_walk_up');
     });
 
     it('should move player DOWN', () => {
@@ -42,7 +42,7 @@ describe('Player', () => {
 
       expect(player.x).toBe(100);
       expect(player.y).toBe(110); // y + 10
-      expect(player.currentAnimation).toBe('walk_down');
+      expect(player.currentAnimation).toBe('player_walk_down');
     });
 
     it('should move player LEFT', () => {
@@ -51,7 +51,7 @@ describe('Player', () => {
 
       expect(player.x).toBe(90); // x - 10
       expect(player.y).toBe(100);
-      expect(player.currentAnimation).toBe('walk_left');
+      expect(player.currentAnimation).toBe('player_walk_left');
     });
 
     it('should move player RIGHT', () => {
@@ -60,7 +60,7 @@ describe('Player', () => {
 
       expect(player.x).toBe(110); // x + 10
       expect(player.y).toBe(100);
-      expect(player.currentAnimation).toBe('walk_right');
+      expect(player.currentAnimation).toBe('player_walk_right');
     });
 
     it('should not move when direction is NONE', () => {
@@ -69,7 +69,7 @@ describe('Player', () => {
 
       expect(player.x).toBe(100);
       expect(player.y).toBe(100);
-      expect(player.currentAnimation).toBe('idle');
+      expect(player.currentAnimation).toBe('player_idle');
     });
   });
 
@@ -82,7 +82,7 @@ describe('Player', () => {
       player.pickUpToy();
 
       expect(player.hasToy).toBe(true);
-      expect(player.currentAnimation).toBe('pickup');
+      expect(player.currentAnimation).toBe('player_interact');
     });
   });
 
@@ -105,7 +105,7 @@ describe('Player', () => {
 
       player.interact('cat');
 
-      expect(player.currentAnimation).toBe('interact');
+      expect(player.currentAnimation).toBe('player_interact');
     });
   });
 });

@@ -24,7 +24,7 @@ export class Player {
   constructor(params: PlayerParams = {}) {
     this.x = params.x ?? 0;
     this.y = params.y ?? 0;
-    this.currentAnimation = 'idle';
+    this.currentAnimation = 'player_idle';
     this.hasToy = false;
   }
 
@@ -36,22 +36,22 @@ export class Player {
     switch (direction) {
       case Direction.UP:
         this.y -= MOVE_SPEED;
-        this.currentAnimation = 'walk_up';
+        this.currentAnimation = 'player_walk_up';
         break;
       case Direction.DOWN:
         this.y += MOVE_SPEED;
-        this.currentAnimation = 'walk_down';
+        this.currentAnimation = 'player_walk_down';
         break;
       case Direction.LEFT:
         this.x -= MOVE_SPEED;
-        this.currentAnimation = 'walk_left';
+        this.currentAnimation = 'player_walk_left';
         break;
       case Direction.RIGHT:
         this.x += MOVE_SPEED;
-        this.currentAnimation = 'walk_right';
+        this.currentAnimation = 'player_walk_right';
         break;
       case Direction.NONE:
-        this.currentAnimation = 'idle';
+        this.currentAnimation = 'player_idle';
         break;
     }
   }
@@ -61,7 +61,7 @@ export class Player {
    */
   public pickUpToy(): void {
     this.hasToy = true;
-    this.currentAnimation = 'pickup';
+    this.currentAnimation = 'player_interact';
   }
 
   /**
@@ -76,7 +76,7 @@ export class Player {
    * @param targetId 対象のID（疎結合のため文字列で指定）
    */
   public interact(targetId: string): void {
-    this.currentAnimation = 'interact';
+    this.currentAnimation = 'player_interact';
     // 実際のインタラクション処理はGameEventやGameControllerで行う
   }
 }

@@ -7,12 +7,15 @@
 
 import Phaser from 'phaser';
 import { PlayerViewModel } from '@/application/types';
+import { CharacterScaleCalculator } from '@/phaser/utils/CharacterScaleCalculator';
+import { AnimationPlayer } from '@/phaser/utils/AnimationPlayer';
 
 /**
  * プレイヤーキャラクタークラス
  */
 export class PlayerCharacter {
   private sprite: Phaser.GameObjects.Sprite;
+  private scene: Phaser.Scene;
 
   /**
    * コンストラクタ
@@ -28,8 +31,15 @@ export class PlayerCharacter {
     y: number,
     textureKey: string
   ) {
+    this.scene = scene;
     this.sprite = scene.add.sprite(x, y, textureKey);
-    this.sprite.setDisplaySize(32, 48); // プレイヤーサイズ
+
+    // スケール計算（動的）
+    const scale = CharacterScaleCalculator.calculate(scene, textureKey, 0.2);
+    this.sprite.setScale(scale);
+
+    // 初期アニメーション再生（安全）
+    AnimationPlayer.play(this.sprite, scene, textureKey, '[PlayerCharacter]');
   }
 
   /**
@@ -41,9 +51,17 @@ export class PlayerCharacter {
     // 位置を更新
     this.sprite.setPosition(viewModel.x, viewModel.y);
 
-    // アニメーション更新（将来実装）
-    // 現在は位置のみ更新
-    // TODO: viewModel.animationに基づいてアニメーションを再生
+    // アニメーション更新
+    this.updateAnimation(viewModel.animation);
+  }
+
+  /**
+   * アニメーションを更新
+   *
+   * @param animationKey - アニメーションキー
+   */
+  private updateAnimation(animationKey: string): void {
+    AnimationPlayer.play(this.sprite, this.scene, animationKey, '[PlayerCharacter]');
   }
 
   /**
