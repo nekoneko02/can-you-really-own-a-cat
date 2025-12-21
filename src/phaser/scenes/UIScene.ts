@@ -80,8 +80,13 @@ export class UIScene extends Phaser.Scene {
     if (gameView.isWaitingForEmotionInput) {
       this.eventUIManager?.update(null, null);
     } else {
-      // イベントUIを更新（currentEventとcurrentScenarioStepの両方を渡す）
-      this.eventUIManager?.update(gameView.currentEvent, gameView.currentScenarioStep);
+      // 夜泣きイベントはRoomSceneのNightCryUIManagerで処理するため、ここでは除外
+      if (gameView.currentEvent && gameView.currentEvent.id.includes('night_crying')) {
+        this.eventUIManager?.update(null, null);
+      } else {
+        // イベントUIを更新（currentEventとcurrentScenarioStepの両方を渡す）
+        this.eventUIManager?.update(gameView.currentEvent, gameView.currentScenarioStep);
+      }
     }
   }
 }

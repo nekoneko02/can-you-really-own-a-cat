@@ -13,10 +13,8 @@ import { PlayerStats } from './PlayerStats';
 import { EventRecord, EmotionData } from './EventRecord';
 import { Choice } from './Choice';
 import { Consequence } from './Consequence';
-import { EventScenario } from './EventScenario';
 import { EventStep } from './EventStep';
 import { EventScheduler } from './EventScheduler';
-import { createNightCryingDay1Scenario } from '@/data/scenarios/nightCryingDay1';
 
 const MAX_DAYS = 7;
 
@@ -39,7 +37,6 @@ export class Game {
   private player: Player;
   private cat: Cat;
   private currentEvent: GameEvent | null;
-  private currentScenario: EventScenario | null;
   private eventHistory: EventRecord[];
   private catStatusManager: CatStatusManager;
   private playerStats: PlayerStats;
@@ -54,7 +51,6 @@ export class Game {
     this.player = new Player({ x: 100, y: 100 });
     this.cat = new Cat({ name: params.catName, x: 200, y: 200 });
     this.currentEvent = null;
-    this.currentScenario = null;
     this.eventHistory = [];
     this.catStatusManager = new CatStatusManager();
     this.playerStats = new PlayerStats();
@@ -124,7 +120,6 @@ export class Game {
     }
 
     // イベント関連フラグをリセット
-    this.currentScenario = null;
     this.currentEvent = null;
     this.isWaitingForEmotion = false;
     console.log('[Game] 次の日に進みました。イベントフラグをリセットしました。');
@@ -149,11 +144,6 @@ export class Game {
    * イベントをトリガーする（MVP版では簡略化）
    */
   public checkEventTrigger(): void {
-    // 既にシナリオが発生している場合はスキップ
-    if (this.currentScenario !== null) {
-      return;
-    }
-
     // 既にイベントが発生している場合はスキップ
     if (this.currentEvent !== null) {
       return;
@@ -167,18 +157,18 @@ export class Game {
     // Phase 6: EventSchedulerを使ってスケジュール判定
     const eventId = this.eventScheduler.getEventIdForDay(this.currentDay);
     if (eventId) {
-      this.currentScenario = this.loadEventScenario(eventId);
-      console.log('[Game] シナリオを発火しました:', eventId, '(Day:', this.currentDay, ')');
+      // 夜泣きイベントはNightCryManagerで処理するため、currentEventのみ設定
+      this.currentEvent = new GameEvent({
+        id: eventId,
+        title: '夜泣き',
+        description: '猫が夜中に鳴いています',
+        catStateDescription: ['猫が夜中に鳴いています'],
+        day: this.currentDay,
+        timeOfDay: TimeOfDay.MIDNIGHT, // 夜泣きは夜中に発生
+        choices: [], // NightCryManagerで処理するため空
+      });
+      console.log('[Game] イベントを発火しました:', eventId, '(Day:', this.currentDay, ')');
     }
-  }
-
-  /**
-   * イベントIDに応じたシナリオをロード
-   */
-  private loadEventScenario(eventId: string): EventScenario {
-    // MVP版: すべて同じシナリオを返す（初日のシナリオ）
-    // 将来的には eventId に応じて異なるシナリオを返す
-    return createNightCryingDay1Scenario();
   }
 
   /**
@@ -228,43 +218,7 @@ export class Game {
    * @param choiceId 選択肢のID
    */
   public executeChoice(choiceId: string): void {
-    // シナリオがある場合はシナリオの選択を実行
-    if (this.currentScenario) {
-      console.log('[Game] 選択肢を実行します:', choiceId);
-
-      // シナリオの選択肢を実行
-      const result = this.currentScenario.executeChoice(choiceId);
-
-      // 結果を適用
-      const consequence = result.consequence;
-
-      // 猫のステータスを更新
-      if (consequence.catStateChanges) {
-        this.catStatusManager.updateStatus(consequence.catStateChanges);
-      }
-
-      // プレイヤーの統計を更新
-      if (consequence.playerStatsChanges) {
-        this.playerStats.incrementInterruptions();
-      }
-
-      console.log('[Game] 選択肢の結果を適用しました');
-      console.log('  - 猫のステータス:', this.catStatusManager.getStatus());
-      console.log('  - プレイヤーの統計:', this.playerStats);
-
-      // シナリオが完了した場合
-      if (result.isCompleted) {
-        this.currentScenario = null;
-        this.isWaitingForEmotion = true;
-        console.log('[Game] シナリオを完了しました。気持ち入力を待ちます。');
-      } else {
-        console.log('[Game] 次のステップ:', result.nextStepId);
-      }
-
-      return;
-    }
-
-    // 従来のイベント処理
+    // イベント処理
     if (!this.currentEvent) {
       console.warn('[Game] イベントが発生していません');
       return;
@@ -304,10 +258,24 @@ export class Game {
   }
 
   /**
+   * 現在のイベントを完了状態にする（夜泣きイベント専用）
+   */
+  public completeCurrentEvent(): void {
+    if (!this.currentEvent) {
+      console.warn('[Game] 完了すべきイベントがありません');
+      return;
+    }
+
+    console.log('[Game] 現在のイベントを完了しました:', this.currentEvent.id);
+    this.currentEvent = null;
+  }
+
+  /**
    * 現在のシナリオステップを取得
+   * @deprecated 旧EventScenarioシステムは廃止されました
    */
   public getCurrentScenarioStep(): EventStep | null {
-    return this.currentScenario?.getCurrentStep() ?? null;
+    return null;
   }
 
   /**
@@ -339,7 +307,6 @@ export class Game {
 
     // 気持ち入力完了 = シナリオ完了
     this.isWaitingForEmotion = false;
-    this.currentScenario = null;
     this.currentEvent = null;
 
     console.log('[Game] 気持ちを記録しました。シナリオを完了しました。', emotion);

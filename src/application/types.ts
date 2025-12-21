@@ -8,7 +8,6 @@ import { Direction } from '@/domain/types';
 import { GamePhase, CatState, CatMood } from '@/domain/types';
 import { GameEvent } from '@/domain/GameEvent';
 import { EventStep } from '@/domain/EventStep';
-import { EventScenario } from '@/domain/EventScenario';
 import { CatStatus } from '@/domain/CatStatus';
 import { PlayerStats } from '@/domain/PlayerStats';
 import { EmotionData } from '@/domain/EventRecord';
@@ -49,7 +48,8 @@ export interface GameView {
   player: PlayerViewModel;
   cat: CatViewModel;
   currentEvent: GameEvent | null;
-  currentScenario: EventScenario | null;
+  /** @deprecated 旧EventScenarioシステムは廃止されました */
+  currentScenario: null;
   currentScenarioStep: EventStep | null;
   catStatus: CatStatus;
   playerStats: PlayerStats;

@@ -4,12 +4,13 @@
  * 責務:
  * - 部屋の背景描画
  * - プレイヤー・猫キャラクターの表示
- * - GameControllerとの連携（tick/view）
+ * - GameApplicationService への委譲（入力処理、イベント処理）
  * - インタラクティブオブジェクトの配置
+ *
+ * 注: DDDに基づき、ドメインクラスを直接操作せず、Application層に委譲する
  */
 
 import Phaser from 'phaser';
-import { PhaserGameController } from '../controllers/PhaserGameController';
 import { AssetKeys } from '../assets/AssetKeys';
 import { GamePhase } from '@/domain/types';
 import { InputController } from '../input/InputController';
@@ -21,6 +22,10 @@ import { FoodBowl } from '../interaction/objects/FoodBowl';
 import { Toy } from '../interaction/objects/Toy';
 import { EmotionInputUI } from '../ui/EmotionInputUI';
 import { MorningMessageUI } from '../ui/MorningMessageUI';
+import { CollisionDetector } from '../collision/CollisionDetector';
+import { NightCryUIManager } from '../ui/NightCryUIManager';
+import { NightCryActionType } from '@/domain/nightcry/actions/NightCryActionType';
+import { GameApplicationService } from '@/application/GameApplicationService';
 
 /**
  * RoomScene起動パラメータ
@@ -34,7 +39,7 @@ export interface RoomSceneParams {
  * RoomScene
  */
 export class RoomScene extends Phaser.Scene {
-  private controller!: PhaserGameController;
+  private appService!: GameApplicationService;
   private inputController!: InputController;
   private background!: Phaser.GameObjects.Image;
   private playerCharacter?: PlayerCharacter;
@@ -43,6 +48,9 @@ export class RoomScene extends Phaser.Scene {
   private emotionInputUI?: EmotionInputUI;
   private morningMessageUI?: MorningMessageUI;
   private hasEvent: boolean = false;
+  private collisionDetector!: CollisionDetector;
+  private nightCryUIManager!: NightCryUIManager;
+  private lastLoggedTime: number = 0;
 
   constructor() {
     super({ key: 'RoomScene' });
@@ -57,15 +65,23 @@ export class RoomScene extends Phaser.Scene {
     // イベントの有無を記録
     this.hasEvent = data.hasEvent ?? false;
 
-    // Registryからcontrollerを取得
-    const gameController = this.registry.get('gameController');
-    if (!gameController) {
-      throw new Error('GameController not found in registry');
+    // Registryから catName を取得（存在する場合）
+    const catName = this.registry.get('catName');
+
+    // GameApplicationService を初期化
+    this.appService = new GameApplicationService({
+      scenarioId: 'test',
+      catName: catName || undefined,
+    });
+
+    // イベントがある場合はMIDNIGHT_EVENTフェーズに設定
+    // （NightPhaseSceneからの遷移時、フェーズがNIGHT_PREPになっているため）
+    if (this.hasEvent) {
+      console.log('[RoomScene] イベントあり。MIDNIGHT_EVENTフェーズに設定');
+      this.appService.getGame().transitionToMidnight();
     }
 
-    this.controller = new PhaserGameController(gameController);
-
-    console.log('[RoomScene] GameController取得完了');
+    console.log('[RoomScene] GameApplicationService 初期化完了');
   }
 
   /**
@@ -99,6 +115,10 @@ export class RoomScene extends Phaser.Scene {
     this.emotionInputUI = new EmotionInputUI(this);
     this.morningMessageUI = new MorningMessageUI(this);
 
+    // CollisionDetector と NightCryUIManager を初期化
+    this.collisionDetector = new CollisionDetector();
+    this.nightCryUIManager = new NightCryUIManager(this);
+
     // UISceneを起動（重ね合わせ）
     this.scene.launch('UIScene');
 
@@ -110,19 +130,29 @@ export class RoomScene extends Phaser.Scene {
    */
   update(time: number, delta: number): void {
     // 入力を取得
-    const input = this.inputController.getInput();
+    let input = this.inputController.getInput();
+
+    // 夜泣きイベント中の入力制御
+    const nightCryState = this.appService.getNightCryEventState();
+    if (nightCryState.isActive &&
+        nightCryState.currentAction !== null &&
+        nightCryState.currentAction !== NightCryActionType.CATCHING) {
+      // 移動入力を無効化（interactは許可）
+      if (input) {
+        input = { interact: input.interact };
+      }
+    }
 
     // インタラクト入力がある場合
     if (input?.interact && this.interactionManager) {
       this.interactionManager.interact();
     }
 
-    // GameControllerに入力を送信（入力がない場合も空のオブジェクトを送る）
-    // これにより、ユーザーが移動しなくてもイベントトリガーが毎フレーム判定される
-    this.controller.tick(input || {});
+    // GameApplicationService に更新を委譲
+    this.appService.update(input || {}, delta);
 
-    // GameControllerから最新状態を取得
-    const gameView = this.controller.view();
+    // ビューを取得
+    const gameView = this.appService.getView();
 
     // プレイヤーキャラクターを更新
     if (this.playerCharacter) {
@@ -139,6 +169,9 @@ export class RoomScene extends Phaser.Scene {
       this.interactionManager.update(gameView.player.x, gameView.player.y);
     }
 
+    // 夜泣きイベントUI処理
+    this.updateNightCryEventUI(gameView, nightCryState);
+
     // フェーズに応じた背景変更
     this.updateBackground(gameView.phase);
 
@@ -148,21 +181,39 @@ export class RoomScene extends Phaser.Scene {
     }
 
     // フェーズ遷移判定
-    this.checkPhaseTransition(gameView.phase);
+    const transition = this.appService.checkPhaseTransition();
+    if (transition.shouldTransition && transition.nextScene) {
+      console.log(`[RoomScene] ${transition.nextScene} に遷移します`);
+      this.scene.start(transition.nextScene);
+    }
   }
 
   /**
-   * フェーズ遷移をチェック
+   * 夜泣きイベントUI更新
    */
-  private checkPhaseTransition(phase: GamePhase): void {
-    if (phase === GamePhase.MORNING_OUTRO) {
-      // 朝フェーズに遷移
-      console.log('[RoomScene] 朝フェーズに遷移します');
-      this.scene.start('MorningPhaseScene');
-    } else if (phase === GamePhase.GAME_END) {
-      // ゲーム終了
-      console.log('[RoomScene] ゲーム終了画面に遷移します');
-      this.scene.start('GameEndScene');
+  private updateNightCryEventUI(gameView: any, nightCryState: any): void {
+    if (nightCryState.isActive) {
+      // デバッグログ（毎秒）
+      const currentTime = this.appService.getTimeService().getElapsedMs();
+      if (Math.floor(currentTime / 1000) !== Math.floor(this.lastLoggedTime / 1000)) {
+        console.log(`[RoomScene] 夜泣きイベント: 満足度=${nightCryState.satisfaction.toFixed(2)}, 諦め度=${nightCryState.resignation.toFixed(2)}`);
+        this.lastLoggedTime = currentTime;
+      }
+
+      // 猫を捕まえる処理（衝突判定）
+      this.handleCatching(gameView, nightCryState);
+
+      // UIを更新
+      if (!this.nightCryUIManager.isShown()) {
+        this.nightCryUIManager.showWithState(nightCryState, (actionType) => {
+          this.handleNightCryActionSelected(actionType);
+        });
+      }
+    } else {
+      // イベントが非アクティブならUIを非表示
+      if (this.nightCryUIManager.isShown()) {
+        this.nightCryUIManager.hide();
+      }
     }
   }
 
@@ -205,8 +256,7 @@ export class RoomScene extends Phaser.Scene {
    * プレイヤーキャラクターを作成
    */
   private createPlayerCharacter(): void {
-    // GameViewから初期位置を取得
-    const gameView = this.controller.view();
+    const gameView = this.appService.getView();
 
     this.playerCharacter = new PlayerCharacter(
       this,
@@ -220,8 +270,7 @@ export class RoomScene extends Phaser.Scene {
    * 猫キャラクターを作成
    */
   private createCatCharacter(): void {
-    // GameViewから初期位置を取得
-    const gameView = this.controller.view();
+    const gameView = this.appService.getView();
 
     this.catCharacter = new CatCharacter(
       this,
@@ -259,12 +308,6 @@ export class RoomScene extends Phaser.Scene {
     this.emotionInputUI.show((emotion) => {
       console.log('[RoomScene] 気持ちを記録します:', emotion);
 
-      // GameControllerに気持ちを記録
-      this.controller['gameController'].recordEmotion(emotion);
-
-      // すぐに朝フェーズに遷移（イベント再発火を防ぐため）
-      this.controller['gameController']['game'].transitionToMorning();
-
       // 翌朝メッセージを表示
       this.showMorningMessage(gameView);
     });
@@ -280,7 +323,6 @@ export class RoomScene extends Phaser.Scene {
 
     this.morningMessageUI.show(message, () => {
       console.log('[RoomScene] 朝メッセージを閉じました');
-      // フェーズ遷移は既にshowEmotionInput()で実行済み
     });
   }
 
@@ -290,7 +332,6 @@ export class RoomScene extends Phaser.Scene {
   private generateMorningMessage(gameView: any): string {
     const nextDay = gameView.day + 1;
 
-    // 暫定: 固定メッセージ
     return `【${nextDay}日目・朝 7:00】
 
 目覚ましが鳴ります。
@@ -299,5 +340,50 @@ export class RoomScene extends Phaser.Scene {
 あなたは昨夜、結局4時間しか眠れませんでした。
 
 今日は朝9時から予定があります。`;
+  }
+
+  /**
+   * 夜泣きアクション選択時の処理
+   */
+  private handleNightCryActionSelected(actionType: NightCryActionType): void {
+    console.log(`[RoomScene] 夜泣きアクション選択: ${actionType}`);
+
+    // GameApplicationService にアクション選択を委譲
+    this.appService.selectNightCryAction(actionType);
+
+    // UIを再表示
+    this.nightCryUIManager.hide();
+    const nightCryState = this.appService.getNightCryEventState();
+    this.nightCryUIManager.showWithState(nightCryState, (nextActionType) => {
+      this.handleNightCryActionSelected(nextActionType);
+    });
+  }
+
+  /**
+   * 猫を捕まえる処理
+   */
+  private handleCatching(gameView: any, nightCryState: any): void {
+    const currentAction = nightCryState.currentAction;
+
+    // プレイヤーと猫の距離を確認
+    const isColliding = this.collisionDetector.isColliding(
+      gameView.player.x,
+      gameView.player.y,
+      gameView.cat.x,
+      gameView.cat.y
+    );
+
+    // CATCHINGアクション中に猫を捕まえたら、LOCKED_OUTアクションに移行
+    if (isColliding && currentAction === NightCryActionType.CATCHING) {
+      console.log('[RoomScene] 猫を捕まえました！別の部屋に追い出します。');
+      this.appService.selectNightCryAction(NightCryActionType.LOCKED_OUT);
+
+      // UIを再表示
+      this.nightCryUIManager.hide();
+      const updatedState = this.appService.getNightCryEventState();
+      this.nightCryUIManager.showWithState(updatedState, (actionType) => {
+        this.handleNightCryActionSelected(actionType);
+      });
+    }
   }
 }

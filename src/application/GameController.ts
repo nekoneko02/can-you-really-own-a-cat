@@ -60,7 +60,6 @@ export class GameController {
     const catStatusManager = this.game['catStatusManager'];
     const playerStats = this.game['playerStats'];
     const currentEvent = this.game['currentEvent'];
-    const currentScenario = this.game['currentScenario'];
 
     const playerViewModel: PlayerViewModel = {
       x: player.x,
@@ -85,7 +84,7 @@ export class GameController {
       player: playerViewModel,
       cat: catViewModel,
       currentEvent,
-      currentScenario,
+      currentScenario: null, // deprecated
       currentScenarioStep: this.game.getCurrentScenarioStep(),
       catStatus: catStatusManager.getStatus(),
       playerStats,

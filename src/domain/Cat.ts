@@ -6,6 +6,7 @@
  */
 
 import { CatState, CatMood, ToyType } from './types';
+import { NightCryActionType } from './nightcry/actions/NightCryActionType';
 
 // 画面境界（ピクセル単位）
 const WORLD_BOUNDS = {
@@ -14,6 +15,22 @@ const WORLD_BOUNDS = {
   minY: 50,
   maxY: 550,
 };
+
+/**
+ * 夜泣き状態
+ *
+ * 猫の夜泣きイベント時の内部状態を管理します。
+ */
+export interface NightCryState {
+  /** 満足度（0.0 - 1.0） */
+  satisfaction: number;
+  /** 諦め度（0.0 - 1.0） */
+  resignation: number;
+  /** 現在のアクション */
+  currentAction: NightCryActionType | null;
+  /** アクション開始時のゲーム時間（ミリ秒） */
+  actionStartTime: number;
+}
 
 export interface CatParams {
   name?: string;
@@ -30,6 +47,7 @@ export class Cat {
   public state: CatState;
   public mood: CatMood;
   public currentAnimation: string;
+  public nightCryState: NightCryState;
 
   constructor(params: CatParams = {}) {
     this.name = params.name ?? 'たま';
@@ -38,6 +56,7 @@ export class Cat {
     this.state = params.state ?? CatState.SLEEPING;
     this.mood = params.mood ?? CatMood.NEUTRAL;
     this.currentAnimation = this.getAnimationForState(this.state);
+    this.nightCryState = this.createInitialNightCryState();
   }
 
   /**
@@ -98,6 +117,35 @@ export class Cat {
   public sleep(): void {
     this.setState(CatState.SLEEPING);
     this.mood = CatMood.SLEEPY;
+  }
+
+  /**
+   * 夜泣き状態を初期化
+   */
+  private createInitialNightCryState(): NightCryState {
+    return {
+      satisfaction: 0,
+      resignation: 0,
+      currentAction: null,
+      actionStartTime: 0,
+    };
+  }
+
+  /**
+   * 夜泣き状態をリセット
+   */
+  public resetNightCryState(): void {
+    this.nightCryState = this.createInitialNightCryState();
+  }
+
+  /**
+   * 夜泣き状態を更新
+   */
+  public updateNightCryState(state: Partial<NightCryState>): void {
+    this.nightCryState = {
+      ...this.nightCryState,
+      ...state,
+    };
   }
 
   /**
