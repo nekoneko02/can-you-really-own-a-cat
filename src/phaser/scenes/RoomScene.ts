@@ -21,8 +21,8 @@ import { Bed } from '../interaction/objects/Bed';
 import { FoodBowl } from '../interaction/objects/FoodBowl';
 import { Toy } from '../interaction/objects/Toy';
 import { EmotionInputUI } from '../ui/EmotionInputUI';
-import { MorningMessageUI } from '../ui/MorningMessageUI';
 import { CollisionDetector } from '../collision/CollisionDetector';
+import { MorningPhaseSceneParams } from './MorningPhaseScene';
 import { NightCryUIManager } from '../ui/NightCryUIManager';
 import { NightCryActionType } from '@/domain/nightcry/actions/NightCryActionType';
 import { GameApplicationService } from '@/application/GameApplicationService';
@@ -46,8 +46,9 @@ export class RoomScene extends Phaser.Scene {
   private catCharacter?: CatCharacter;
   private interactionManager?: InteractionManager;
   private emotionInputUI?: EmotionInputUI;
-  private morningMessageUI?: MorningMessageUI;
   private hasEvent: boolean = false;
+  private lastNightCryAction?: NightCryActionType | null;
+  private lastCompletedBy?: 'satisfaction' | 'resignation' | null;
   private collisionDetector!: CollisionDetector;
   private nightCryUIManager!: NightCryUIManager;
   private lastLoggedTime: number = 0;
@@ -111,9 +112,8 @@ export class RoomScene extends Phaser.Scene {
     // インタラクション管理を作成
     this.createInteractionManager();
 
-    // EmotionInputUIとMorningMessageUIを作成
+    // EmotionInputUIを作成
     this.emotionInputUI = new EmotionInputUI(this);
-    this.morningMessageUI = new MorningMessageUI(this);
 
     // CollisionDetector と NightCryUIManager を初期化
     this.collisionDetector = new CollisionDetector();
@@ -184,7 +184,18 @@ export class RoomScene extends Phaser.Scene {
     const transition = this.appService.checkPhaseTransition();
     if (transition.shouldTransition && transition.nextScene) {
       console.log(`[RoomScene] ${transition.nextScene} に遷移します`);
-      this.scene.start(transition.nextScene);
+
+      if (transition.nextScene === 'MorningPhaseScene') {
+        // MorningPhaseScene へ遷移する際に、夜泣きイベント結果を渡す
+        const params: MorningPhaseSceneParams = {
+          hadNightCryEvent: this.hasEvent,
+          lastAction: this.lastNightCryAction,
+          completedBy: this.lastCompletedBy,
+        };
+        this.scene.start(transition.nextScene, params);
+      } else {
+        this.scene.start(transition.nextScene);
+      }
     }
   }
 
@@ -198,6 +209,11 @@ export class RoomScene extends Phaser.Scene {
       if (Math.floor(currentTime / 1000) !== Math.floor(this.lastLoggedTime / 1000)) {
         console.log(`[RoomScene] 夜泣きイベント: 満足度=${nightCryState.satisfaction.toFixed(2)}, 諦め度=${nightCryState.resignation.toFixed(2)}`);
         this.lastLoggedTime = currentTime;
+      }
+
+      // イベント完了直前に結果を保存（MorningPhaseScene へ渡すため）
+      if (nightCryState.isCompleted) {
+        this.saveNightCryResult(nightCryState);
       }
 
       // 猫を捕まえる処理（衝突判定）
@@ -215,6 +231,21 @@ export class RoomScene extends Phaser.Scene {
         this.nightCryUIManager.hide();
       }
     }
+  }
+
+  /**
+   * 夜泣きイベント結果を保存
+   */
+  private saveNightCryResult(nightCryState: any): void {
+    this.lastNightCryAction = nightCryState.currentAction;
+
+    if (nightCryState.satisfaction >= 1.0) {
+      this.lastCompletedBy = 'satisfaction';
+    } else if (nightCryState.resignation >= 1.0) {
+      this.lastCompletedBy = 'resignation';
+    }
+
+    console.log(`[RoomScene] 夜泣きイベント結果保存: action=${this.lastNightCryAction}, completedBy=${this.lastCompletedBy}`);
   }
 
   /**
@@ -307,39 +338,8 @@ export class RoomScene extends Phaser.Scene {
 
     this.emotionInputUI.show((emotion) => {
       console.log('[RoomScene] 気持ちを記録します:', emotion);
-
-      // 翌朝メッセージを表示
-      this.showMorningMessage(gameView);
+      // 朝メッセージは MorningPhaseScene で表示するため、ここでは何もしない
     });
-  }
-
-  /**
-   * 翌朝メッセージを表示
-   */
-  private showMorningMessage(gameView: any): void {
-    if (!this.morningMessageUI) return;
-
-    const message = this.generateMorningMessage(gameView);
-
-    this.morningMessageUI.show(message, () => {
-      console.log('[RoomScene] 朝メッセージを閉じました');
-    });
-  }
-
-  /**
-   * 翌朝メッセージを生成
-   */
-  private generateMorningMessage(gameView: any): string {
-    const nextDay = gameView.day + 1;
-
-    return `【${nextDay}日目・朝 7:00】
-
-目覚ましが鳴ります。
-
-時計を見ると、7時です。
-あなたは昨夜、結局4時間しか眠れませんでした。
-
-今日は朝9時から予定があります。`;
   }
 
   /**

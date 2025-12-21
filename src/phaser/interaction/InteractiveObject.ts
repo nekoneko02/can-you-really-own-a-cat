@@ -134,6 +134,14 @@ export class InteractiveObject {
   }
 
   /**
+   * インタラクトを実行（サブクラスでオーバーライド可能）
+   */
+  interact(): void {
+    // デフォルトは何もしない
+    // サブクラスで必要に応じてオーバーライド
+  }
+
+  /**
    * オブジェクトを破棄
    */
   destroy(): void {

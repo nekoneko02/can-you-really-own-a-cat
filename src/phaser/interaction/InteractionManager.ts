@@ -77,15 +77,8 @@ export class InteractionManager {
 
     console.log(`[InteractionManager] インタラクト: ${objectId}`);
 
-    // TODO: 将来実装
-    // 1. GameControllerにinteractイベントを送信
-    //    - controller.tick({ interact: true, targetObject: objectId })
-    // 2. GameControllerからPhaserActionを受け取る
-    //    - const phaserAction = gameView.phaserAction
-    // 3. PhaserActionの種類に応じて処理を分岐
-    //    - MOVE_TO: プレイヤーを対象位置に移動
-    //    - INTERACT_WITH: 対象オブジェクトとのインタラクション実行
-    //    - WAIT: 何もしない
+    // オブジェクト固有のインタラクト処理を実行
+    this.nearestObject.interact();
   }
 
   /**

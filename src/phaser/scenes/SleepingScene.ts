@@ -9,6 +9,7 @@
 
 import Phaser from 'phaser';
 import { GameController } from '@/application/GameController';
+import { MorningPhaseSceneParams } from './MorningPhaseScene';
 
 /**
  * SleepingScene起動パラメータ
@@ -148,7 +149,10 @@ export class SleepingScene extends Phaser.Scene {
       } else {
         // イベントがない場合: MorningPhaseSceneへ
         console.log('[SleepingScene] イベントなし。MorningPhaseSceneへ遷移');
-        this.scene.start('MorningPhaseScene');
+        const params: MorningPhaseSceneParams = {
+          hadNightCryEvent: false,
+        };
+        this.scene.start('MorningPhaseScene', params);
       }
     });
   }
