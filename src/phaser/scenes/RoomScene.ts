@@ -147,43 +147,8 @@ export class RoomScene extends Phaser.Scene {
       this.showEmotionInput(gameView);
     }
 
-    // イベントがない日の朝フェーズへの遷移を処理
-    this.checkNoEventDay(gameView);
-
     // フェーズ遷移判定
     this.checkPhaseTransition(gameView.phase);
-  }
-
-  /**
-   * イベントがない日の朝フェーズへの遷移を処理
-   *
-   * イベントがある日は、気持ち入力UI → 翌朝メッセージ → 朝フェーズ遷移の流れで処理される。
-   * イベントがない日は、この関数で朝フェーズに遷移する。
-   */
-  private checkNoEventDay(gameView: any): void {
-    // MIDNIGHT_EVENTフェーズでない場合は何もしない
-    if (gameView.phase !== GamePhase.MIDNIGHT_EVENT) {
-      return;
-    }
-
-    // イベントがある日は何もしない
-    if (this.hasEvent) {
-      return;
-    }
-
-    // シナリオが発生している場合は何もしない（念のため）
-    if (gameView.currentScenario) {
-      return;
-    }
-
-    // 気持ち入力待ちの場合は何もしない（念のため）
-    if (gameView.isWaitingForEmotionInput) {
-      return;
-    }
-
-    // イベントがない日: 朝フェーズに遷移
-    console.log('[RoomScene] イベントなし。朝フェーズに遷移します。');
-    this.controller['gameController']['game'].transitionToMorning();
   }
 
   /**

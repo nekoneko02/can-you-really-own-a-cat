@@ -149,8 +149,8 @@ export class NightPhaseScene extends Phaser.Scene {
 
     console.log('[NightPhaseScene] Day', currentDay, 'のイベント:', eventId ?? 'なし');
 
-    // RoomScene（夜中フェーズ）へ遷移（イベント情報を渡す）
-    this.scene.start('RoomScene', {
+    // SleepingSceneへ遷移（イベント情報を渡す）
+    this.scene.start('SleepingScene', {
       hasEvent: eventId !== null,
       eventId: eventId,
     });

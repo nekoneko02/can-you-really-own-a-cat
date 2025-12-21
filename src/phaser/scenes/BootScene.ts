@@ -90,6 +90,10 @@ export class BootScene extends Phaser.Scene {
       const { NightPhaseScene } = require('./NightPhaseScene');
       this.scene.add('NightPhaseScene', NightPhaseScene, false);
     }
+    if (!this.scene.manager.getScene('SleepingScene')) {
+      const { SleepingScene } = require('./SleepingScene');
+      this.scene.add('SleepingScene', SleepingScene, false);
+    }
     if (!this.scene.manager.getScene('MorningPhaseScene')) {
       const { MorningPhaseScene } = require('./MorningPhaseScene');
       this.scene.add('MorningPhaseScene', MorningPhaseScene, false);
