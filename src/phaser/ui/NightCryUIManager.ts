@@ -9,6 +9,7 @@ import { Cat } from '@/domain/Cat';
 import { NightCryActionType } from '@/domain/nightcry/actions/NightCryActionType';
 import { DialogSystem } from './DialogSystem';
 import { ChoiceButton } from './ChoiceButton';
+import { UILayout } from './UIConstants';
 
 /**
  * 夜泣きイベントの状態（DTO）
@@ -260,14 +261,15 @@ export class NightCryUIManager {
   private createChoiceButtons(choices: Array<{ text: string; action: NightCryActionType | 'STOP' | 'WAKE_UP' | 'TRY_TO_CATCH' }>): void {
     this.clearChoiceButtons();
 
-    const buttonY = 330;
-    const buttonSpacing = 70;
+    const buttonX = UILayout.choiceButton.x; // 右端中央
+    const startY = UILayout.choiceButton.startY;
+    const spacing = UILayout.choiceButton.spacing;
 
     choices.forEach((choice, index) => {
       const button = new ChoiceButton(
         this.scene,
-        400,
-        buttonY - index * buttonSpacing,
+        buttonX,
+        startY + index * spacing, // 上から下へ配置
         choice.text,
         () => this.onChoiceClicked(choice.action)
       );

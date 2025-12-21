@@ -12,7 +12,6 @@
 import Phaser from 'phaser';
 import { PhaserGameController } from '../controllers/PhaserGameController';
 import { EventUIManager } from '../ui/EventUIManager';
-import { StatusDisplay } from '../ui/StatusDisplay';
 import { ProgressIndicator } from '../ui/ProgressIndicator';
 
 /**
@@ -21,7 +20,6 @@ import { ProgressIndicator } from '../ui/ProgressIndicator';
 export class UIScene extends Phaser.Scene {
   private controller!: PhaserGameController;
   private progressIndicator?: ProgressIndicator;
-  private statusDisplay?: StatusDisplay;
   private eventUIManager?: EventUIManager;
 
   constructor() {
@@ -54,9 +52,6 @@ export class UIScene extends Phaser.Scene {
     // 進行状況表示（左上）
     this.progressIndicator = new ProgressIndicator(this, 20, 20);
 
-    // ステータスバー表示（右上）
-    this.statusDisplay = new StatusDisplay(this, 600, 20);
-
     // イベントUIマネージャー（中央下）
     this.eventUIManager = new EventUIManager(this, this.controller);
 
@@ -72,9 +67,6 @@ export class UIScene extends Phaser.Scene {
 
     // 進行状況を更新
     this.progressIndicator?.update(gameView.day, gameView.time, gameView.phase);
-
-    // ステータスバーを更新（猫の名前も渡す）
-    this.statusDisplay?.update(gameView.catStatus, gameView.cat.name);
 
     // 気持ち入力待ち状態の場合はEventUIを非表示
     if (gameView.isWaitingForEmotionInput) {

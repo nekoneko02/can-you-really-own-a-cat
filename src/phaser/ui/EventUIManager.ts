@@ -10,6 +10,7 @@ import { EventStep } from '@/domain/EventStep';
 import { PhaserGameController } from '@/phaser/controllers/PhaserGameController';
 import { DialogSystem } from './DialogSystem';
 import { ChoiceButton } from './ChoiceButton';
+import { UILayout } from './UIConstants';
 
 export class EventUIManager {
   private scene: Phaser.Scene;
@@ -137,14 +138,15 @@ export class EventUIManager {
    * @param choices 選択肢の配列
    */
   private createChoiceButtons(choices: any[]): void {
-    const buttonY = 330; // ダイアログの上に配置
-    const buttonSpacing = 70;
+    const buttonX = UILayout.choiceButton.x; // 右端中央
+    const startY = UILayout.choiceButton.startY;
+    const spacing = UILayout.choiceButton.spacing;
 
     choices.forEach((choice, index) => {
       const button = new ChoiceButton(
         this.scene,
-        400, // 中央
-        buttonY - index * buttonSpacing,
+        buttonX,
+        startY + index * spacing, // 上から下へ配置
         choice.text,
         () => this.onChoiceSelected(choice.id)
       );

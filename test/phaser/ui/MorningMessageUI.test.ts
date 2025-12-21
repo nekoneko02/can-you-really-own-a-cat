@@ -23,7 +23,23 @@ describe('MorningMessageUI', () => {
           on: jest.fn(),
         })),
         text: jest.fn(() => ({
-          setOrigin: jest.fn(),
+          setOrigin: jest.fn().mockReturnThis(),
+          setVisible: jest.fn().mockReturnThis(),
+          destroy: jest.fn(),
+        })),
+        graphics: jest.fn(() => ({
+          clear: jest.fn().mockReturnThis(),
+          fillStyle: jest.fn().mockReturnThis(),
+          fillRect: jest.fn().mockReturnThis(),
+          fillRoundedRect: jest.fn().mockReturnThis(),
+          setVisible: jest.fn().mockReturnThis(),
+          destroy: jest.fn(),
+        })),
+        zone: jest.fn(() => ({
+          setInteractive: jest.fn().mockReturnThis(),
+          setVisible: jest.fn().mockReturnThis(),
+          on: jest.fn().mockReturnThis(),
+          destroy: jest.fn(),
         })),
       },
     } as unknown as Phaser.Scene;

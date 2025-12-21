@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { UIColors, UIFonts } from './UIConstants';
+import { BaseButton } from './components/BaseButton';
 
 /**
  * 翌朝メッセージUI
@@ -8,6 +10,7 @@ import Phaser from 'phaser';
 export class MorningMessageUI {
   private scene: Phaser.Scene;
   private container: Phaser.GameObjects.Container;
+  private nextButton?: BaseButton;
   private onComplete?: () => void;
 
   constructor(scene: Phaser.Scene) {
@@ -32,6 +35,10 @@ export class MorningMessageUI {
   public hide(): void {
     this.container.setVisible(false);
     this.container.removeAll(true);
+    if (this.nextButton) {
+      this.nextButton.destroy();
+      this.nextButton = undefined;
+    }
   }
 
   /**
@@ -48,29 +55,24 @@ export class MorningMessageUI {
 
     // メッセージテキスト（複数行対応）
     const text = this.scene.add.text(400, 260, message, {
-      fontSize: '18px',
+      fontSize: UIFonts.body,
       color: '#000000',
       align: 'center',
+      fontFamily: UIFonts.family,
       wordWrap: { width: 500 },
     });
     text.setOrigin(0.5);
     this.container.add(text);
 
-    // 「次へ」ボタン
-    const button = this.scene.add.rectangle(400, 420, 120, 40, 0x4CAF50);
-    button.setInteractive({ useHandCursor: true });
-    this.container.add(button);
-
-    const buttonText = this.scene.add.text(400, 420, '次へ', {
-      fontSize: '20px',
-      color: '#ffffff',
-    });
-    buttonText.setOrigin(0.5);
-    this.container.add(buttonText);
-
-    button.on('pointerdown', () => {
-      this.submit();
-    });
+    // 「次へ」ボタン（BaseButtonを使用）
+    this.nextButton = new BaseButton(
+      this.scene,
+      400,
+      420,
+      '次へ',
+      () => this.submit(),
+      { size: 'secondary', color: UIColors.accent }
+    );
   }
 
   /**

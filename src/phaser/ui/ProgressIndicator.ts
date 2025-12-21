@@ -1,51 +1,44 @@
 /**
  * ProgressIndicator
  *
- * ゲームの進行状況を表示します（Day、時刻、フェーズ）。
- * MVP版はプレースホルダー（テキスト表示）で実装。
+ * ゲームの進行状況を表示します（Day、時刻）。
+ * UIConstantsを使用した共通コンポーネント。
  */
 
 import { GamePhase } from '@/domain/types';
+import { UIColors, UIFonts } from './UIConstants';
 
 export class ProgressIndicator {
   private scene: Phaser.Scene;
   private x: number;
   private y: number;
 
+  private container: Phaser.GameObjects.Graphics;
   private dayText: Phaser.GameObjects.Text;
   private timeText: Phaser.GameObjects.Text;
-  private phaseText: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene, x: number = 20, y: number = 20) {
     this.scene = scene;
     this.x = x;
     this.y = y;
 
+    // 背景コンテナ（半透明黒）
+    this.container = scene.add.graphics();
+    this.container.fillStyle(UIColors.dialogBg, 0.7);
+    this.container.fillRoundedRect(x, y, 120, 55, 8);
+
     // Day表示
-    this.dayText = scene.add.text(x, y, '', {
-      fontSize: '20px',
+    this.dayText = scene.add.text(x + 10, y + 8, '', {
+      fontSize: UIFonts.titleMedium,
       color: '#ffffff',
-      fontFamily: 'Arial',
-      backgroundColor: '#000000',
-      padding: { x: 10, y: 5 },
+      fontFamily: UIFonts.family,
     });
 
     // 時刻表示
-    this.timeText = scene.add.text(x, y + 35, '', {
-      fontSize: '18px',
+    this.timeText = scene.add.text(x + 10, y + 32, '', {
+      fontSize: UIFonts.body,
       color: '#cccccc',
-      fontFamily: 'Arial',
-      backgroundColor: '#000000',
-      padding: { x: 10, y: 5 },
-    });
-
-    // フェーズ表示
-    this.phaseText = scene.add.text(x, y + 70, '', {
-      fontSize: '16px',
-      color: '#aaaaaa',
-      fontFamily: 'Arial',
-      backgroundColor: '#000000',
-      padding: { x: 10, y: 5 },
+      fontFamily: UIFonts.family,
     });
   }
 
@@ -64,37 +57,23 @@ export class ProgressIndicator {
     const minutes = time % 100;
     const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     this.timeText.setText(timeStr);
-
-    // フェーズ表示（日本語）
-    const phaseName = this.getPhaseNameJa(phase);
-    this.phaseText.setText(phaseName);
   }
 
   /**
-   * フェーズ名を日本語に変換
-   * @param phase ゲームフェーズ
+   * 表示/非表示を設定
    */
-  private getPhaseNameJa(phase: GamePhase): string {
-    switch (phase) {
-      case GamePhase.NIGHT_PREP:
-        return '夜（就寝準備）';
-      case GamePhase.MIDNIGHT_EVENT:
-        return '夜中（イベント）';
-      case GamePhase.MORNING_OUTRO:
-        return '朝（振り返り）';
-      case GamePhase.GAME_END:
-        return 'ゲーム終了';
-      default:
-        return '';
-    }
+  setVisible(visible: boolean): void {
+    this.container.setVisible(visible);
+    this.dayText.setVisible(visible);
+    this.timeText.setVisible(visible);
   }
 
   /**
    * 進行状況表示を破棄
    */
   destroy(): void {
+    this.container.destroy();
     this.dayText.destroy();
     this.timeText.destroy();
-    this.phaseText.destroy();
   }
 }

@@ -13,7 +13,8 @@ import { NightCryActionType } from '@/domain/nightcry/actions/NightCryActionType
 export class TimeService {
   private gameClock: GameClock;
   private actionScaledTime: ScaledTime | null = null;
-  private displayTime: number = 2200; // 22:00
+  private baseDisplayTime: number = 2200; // 22:00（アクション開始時の時刻）
+  private accumulatedGameTimeMs: number = 0; // 累積ゲーム時間（ミリ秒）
 
   constructor() {
     this.gameClock = new GameClock();
@@ -25,6 +26,13 @@ export class TimeService {
    */
   update(deltaMs: number): void {
     this.gameClock.update(deltaMs);
+
+    // アクション中はスケール適用した時間を累積
+    if (this.actionScaledTime) {
+      const currentTime = this.gameClock.getElapsedMs();
+      const scaledElapsed = this.actionScaledTime.getScaledElapsed(currentTime);
+      this.accumulatedGameTimeMs = scaledElapsed;
+    }
   }
 
   /**
@@ -39,8 +47,15 @@ export class TimeService {
 
   /**
    * アクション時間計測を停止
+   * 累積時間をbaseDisplayTimeに反映
    */
   stopActionTime(): void {
+    if (this.actionScaledTime) {
+      // 累積時間をbaseDisplayTimeに反映
+      const elapsedMinutes = Math.floor(this.accumulatedGameTimeMs / 60000);
+      this.baseDisplayTime = this.addMinutesToTime(this.baseDisplayTime, elapsedMinutes);
+      this.accumulatedGameTimeMs = 0;
+    }
     this.actionScaledTime = null;
   }
 
@@ -82,20 +97,48 @@ export class TimeService {
   reset(): void {
     this.gameClock.reset();
     this.actionScaledTime = null;
-    this.displayTime = 2200;
+    this.baseDisplayTime = 2200;
+    this.accumulatedGameTimeMs = 0;
   }
 
   /**
    * 表示用時刻を取得
+   * アクション中は累積ゲーム時間を加算した時刻を返す
    */
   getDisplayTime(): number {
-    return this.displayTime;
+    if (this.actionScaledTime) {
+      const elapsedMinutes = Math.floor(this.accumulatedGameTimeMs / 60000);
+      return this.addMinutesToTime(this.baseDisplayTime, elapsedMinutes);
+    }
+    return this.baseDisplayTime;
   }
 
   /**
    * 表示用時刻を設定
    */
   setDisplayTime(time: number): void {
-    this.displayTime = time;
+    this.baseDisplayTime = time;
+    this.accumulatedGameTimeMs = 0;
+  }
+
+  /**
+   * 時刻に分を加算（HHMM形式）
+   * @param time 時刻（HHMM形式）
+   * @param minutes 加算する分
+   * @returns 加算後の時刻（HHMM形式）
+   */
+  private addMinutesToTime(time: number, minutes: number): number {
+    const hours = Math.floor(time / 100);
+    const mins = time % 100;
+
+    let totalMinutes = hours * 60 + mins + minutes;
+
+    // 24時間を超えた場合は次の日に
+    totalMinutes = totalMinutes % (24 * 60);
+
+    const newHours = Math.floor(totalMinutes / 60);
+    const newMins = totalMinutes % 60;
+
+    return newHours * 100 + newMins;
   }
 }

@@ -2,81 +2,210 @@
  * DialogSystem
  *
  * イベントテキストを表示するダイアログシステム。
- * MVP版はプレースホルダー（半透明黒矩形とテキスト）で実装。
+ * テキスト送り機能（ページ送り）対応。
  */
+
+import { UIColors, UIFonts, UILayout } from './UIConstants';
+
+/**
+ * ダイアログ表示用のページデータ
+ */
+export interface DialogPage {
+  text: string; // 表示するテキスト
+  style?: 'normal' | 'highlight'; // スタイル（オプション）
+}
+
+/**
+ * ダイアログ表示用のデータ
+ */
+export interface DialogData {
+  pages: DialogPage[]; // ページの配列（シナリオ側で自由に分割可能）
+}
 
 export class DialogSystem {
   private scene: Phaser.Scene;
   private background: Phaser.GameObjects.Graphics;
-  private titleText: Phaser.GameObjects.Text;
-  private descriptionText: Phaser.GameObjects.Text;
-  private catStateText: Phaser.GameObjects.Text;
+  private contentText: Phaser.GameObjects.Text;
+  private indicatorText: Phaser.GameObjects.Text;
+  private dialogZone: Phaser.GameObjects.Zone;
+
+  // ページ送り用
+  private pages: DialogPage[] = [];
+  private currentPageIndex: number = 0;
+  private onComplete?: () => void;
+  private isVisible: boolean = false;
+
+  // レガシーモード用（旧show互換）
+  private legacyMode: boolean = false;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
 
-    // 半透明黒矩形の背景（800x200px、下部に配置）
+    // 半透明黒矩形の背景（800x120px、下部に配置）
     this.background = scene.add.graphics();
-    this.background.fillStyle(0x000000, 0.85);
-    this.background.fillRect(0, 400, 800, 200);
+    this.background.fillStyle(UIColors.dialogBg, UIColors.dialogBgAlpha);
+    this.background.fillRect(
+      UILayout.dialogArea.x,
+      UILayout.dialogArea.y,
+      UILayout.dialogArea.width,
+      UILayout.dialogArea.height
+    );
     this.background.setVisible(false);
 
-    // タイトルテキスト（24px、白色）
-    this.titleText = scene.add.text(50, 420, '', {
-      fontSize: '24px',
+    // コンテンツテキスト（18px、白色）
+    this.contentText = scene.add.text(UILayout.dialog.textX, UILayout.dialog.textY, '', {
+      fontSize: UIFonts.body,
       color: '#ffffff',
-      fontFamily: 'Arial',
-      wordWrap: { width: 700 },
+      fontFamily: UIFonts.family,
+      wordWrap: { width: UILayout.dialog.textWidth },
     });
-    this.titleText.setVisible(false);
+    this.contentText.setVisible(false);
 
-    // 説明テキスト（18px、灰色）
-    this.descriptionText = scene.add.text(50, 460, '', {
-      fontSize: '18px',
-      color: '#cccccc',
-      fontFamily: 'Arial',
-      wordWrap: { width: 700 },
-    });
-    this.descriptionText.setVisible(false);
+    // 進行インジケーター（▼マーク）
+    this.indicatorText = scene.add.text(
+      UILayout.dialog.indicatorX,
+      UILayout.dialog.indicatorY,
+      '▼ [Enter]',
+      {
+        fontSize: UIFonts.indicator,
+        color: '#aaaaaa',
+        fontFamily: UIFonts.family,
+      }
+    );
+    this.indicatorText.setOrigin(1, 1);
+    this.indicatorText.setVisible(false);
 
-    // 猫の様子テキスト（16px、黄色）
-    this.catStateText = scene.add.text(50, 520, '', {
-      fontSize: '16px',
-      color: '#ffdd44',
-      fontFamily: 'Arial',
-      wordWrap: { width: 700 },
-    });
-    this.catStateText.setVisible(false);
+    // ダイアログエリア用のインタラクティブゾーン
+    this.dialogZone = scene.add.zone(
+      UILayout.dialogArea.x + UILayout.dialogArea.width / 2,
+      UILayout.dialogArea.y + UILayout.dialogArea.height / 2,
+      UILayout.dialogArea.width,
+      UILayout.dialogArea.height
+    );
+    this.dialogZone.setInteractive({ useHandCursor: true });
+    this.dialogZone.setVisible(false);
+
+    // 入力ハンドラを設定
+    this.setupInputHandlers();
   }
 
   /**
-   * ダイアログを表示
+   * 入力ハンドラの設定
+   */
+  private setupInputHandlers(): void {
+    // Enterキー
+    this.scene.input.keyboard?.on('keydown-ENTER', () => {
+      if (this.isVisible && !this.legacyMode) {
+        this.next();
+      }
+    });
+
+    // クリック（ダイアログエリア内）
+    this.dialogZone.on('pointerdown', () => {
+      if (this.isVisible && !this.legacyMode) {
+        this.next();
+      }
+    });
+  }
+
+  /**
+   * ダイアログを表示（新方式：ページ配列）
+   * @param data ダイアログデータ（ページ配列）
+   * @param onComplete 全ページ表示完了時のコールバック
+   */
+  showPages(data: DialogData, onComplete?: () => void): void {
+    this.legacyMode = false;
+    this.pages = data.pages;
+    this.currentPageIndex = 0;
+    this.onComplete = onComplete;
+    this.isVisible = true;
+    this.dialogZone.setVisible(true);
+    this.showCurrentPage();
+  }
+
+  /**
+   * 現在のページを表示
+   */
+  private showCurrentPage(): void {
+    const page = this.pages[this.currentPageIndex];
+    if (!page) return;
+
+    // スタイルに応じた色を設定
+    const color = page.style === 'highlight' ? '#ffdd44' : '#ffffff';
+    this.contentText.setStyle({ color });
+    this.contentText.setText(page.text);
+
+    this.background.setVisible(true);
+    this.contentText.setVisible(true);
+
+    // 最終ページでなければインジケーターを表示
+    if (!this.isLastPage()) {
+      this.indicatorText.setVisible(true);
+    } else {
+      this.indicatorText.setVisible(false);
+    }
+  }
+
+  /**
+   * 次のページへ進む
+   */
+  next(): void {
+    if (this.currentPageIndex < this.pages.length - 1) {
+      this.currentPageIndex++;
+      this.showCurrentPage();
+    } else {
+      // 最終ページの場合は完了コールバック
+      this.onComplete?.();
+    }
+  }
+
+  /**
+   * 最終ページかどうか
+   */
+  isLastPage(): boolean {
+    return this.currentPageIndex >= this.pages.length - 1;
+  }
+
+  /**
+   * ダイアログを表示（レガシー互換）
    * @param title イベントタイトル
    * @param description イベント説明
    * @param catState 猫の様子（配列）
    */
   show(title: string, description: string, catState: string[]): void {
-    this.titleText.setText(title);
-    this.descriptionText.setText(description);
+    this.legacyMode = true;
+    this.isVisible = true;
+    this.dialogZone.setVisible(false); // レガシーモードではクリック送りは無効
 
     // 猫の様子を改行で連結
-    const catStateText = catState.join('\n');
-    this.catStateText.setText(catStateText);
+    const catStateText = catState.length > 0 ? '\n\n' + catState.join('\n') : '';
+
+    // タイトルと説明を連結して表示
+    let fullText = '';
+    if (title) {
+      fullText = `【${title}】\n\n${description}${catStateText}`;
+    } else {
+      fullText = `${description}${catStateText}`;
+    }
+
+    this.contentText.setStyle({ color: '#ffffff' });
+    this.contentText.setText(fullText);
 
     this.background.setVisible(true);
-    this.titleText.setVisible(true);
-    this.descriptionText.setVisible(true);
-    this.catStateText.setVisible(true);
+    this.contentText.setVisible(true);
+    this.indicatorText.setVisible(false);
   }
 
   /**
    * ダイアログを非表示
    */
   hide(): void {
+    this.isVisible = false;
+    this.legacyMode = false;
     this.background.setVisible(false);
-    this.titleText.setVisible(false);
-    this.descriptionText.setVisible(false);
-    this.catStateText.setVisible(false);
+    this.contentText.setVisible(false);
+    this.indicatorText.setVisible(false);
+    this.dialogZone.setVisible(false);
   }
 
   /**
@@ -84,8 +213,8 @@ export class DialogSystem {
    */
   destroy(): void {
     this.background.destroy();
-    this.titleText.destroy();
-    this.descriptionText.destroy();
-    this.catStateText.destroy();
+    this.contentText.destroy();
+    this.indicatorText.destroy();
+    this.dialogZone.destroy();
   }
 }

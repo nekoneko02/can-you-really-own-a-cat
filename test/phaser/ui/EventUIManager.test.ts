@@ -38,15 +38,22 @@ describe('EventUIManager', () => {
         })),
         text: jest.fn(() => ({
           setText: jest.fn().mockReturnThis(),
+          setStyle: jest.fn().mockReturnThis(),
           setOrigin: jest.fn().mockReturnThis(),
           setVisible: jest.fn().mockReturnThis(),
           destroy: jest.fn(),
         })),
         zone: jest.fn(() => ({
           setInteractive: jest.fn().mockReturnThis(),
+          setVisible: jest.fn().mockReturnThis(),
           on: jest.fn().mockReturnThis(),
           destroy: jest.fn(),
         })),
+      },
+      input: {
+        keyboard: {
+          on: jest.fn(),
+        },
       },
     } as unknown as Phaser.Scene;
 

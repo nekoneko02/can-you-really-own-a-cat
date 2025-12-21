@@ -10,13 +10,14 @@
 import Phaser from 'phaser';
 import { PhaserGameController } from '../controllers/PhaserGameController';
 import { GamePhase } from '@/domain/types';
+import { BaseButton } from '@/phaser/ui/components/BaseButton';
 
 /**
  * MorningPhaseScene
  */
 export class MorningPhaseScene extends Phaser.Scene {
   private controller!: PhaserGameController;
-  private goToWorkButton?: Phaser.GameObjects.Zone;
+  private goToWorkButton?: BaseButton;
 
   constructor() {
     super({ key: 'MorningPhaseScene' });
@@ -142,40 +143,17 @@ export class MorningPhaseScene extends Phaser.Scene {
    * 「出勤する」ボタンを作成
    */
   private createGoToWorkButton(): void {
-    // ボタン背景（Graphics）
-    const buttonBg = this.add.graphics();
-    buttonBg.fillStyle(0x666666, 1);
-    buttonBg.fillRoundedRect(300, 420, 200, 50, 10);
-
-    // ボタンテキスト
-    const buttonText = this.add.text(400, 445, '出勤する', {
-      fontSize: '24px',
-      color: '#ffffff',
-    });
-    buttonText.setOrigin(0.5, 0.5);
-
-    // インタラクティブゾーン
-    this.goToWorkButton = this.add.zone(400, 445, 200, 50);
-    this.goToWorkButton.setInteractive({ useHandCursor: true });
-
-    // ホバー時の色変更
-    this.goToWorkButton.on('pointerover', () => {
-      buttonBg.clear();
-      buttonBg.fillStyle(0x888888, 1); // 明るい灰色
-      buttonBg.fillRoundedRect(300, 420, 200, 50, 10);
-    });
-
-    this.goToWorkButton.on('pointerout', () => {
-      buttonBg.clear();
-      buttonBg.fillStyle(0x666666, 1); // 通常の灰色
-      buttonBg.fillRoundedRect(300, 420, 200, 50, 10);
-    });
-
-    // クリックイベント
-    this.goToWorkButton.on('pointerdown', () => {
-      console.log('[MorningPhaseScene] 出勤するボタンがクリックされました');
-      this.onGoToWorkButtonClicked();
-    });
+    this.goToWorkButton = new BaseButton(
+      this,
+      400,
+      445,
+      '出勤する',
+      () => {
+        console.log('[MorningPhaseScene] 出勤するボタンがクリックされました');
+        this.onGoToWorkButtonClicked();
+      },
+      { size: 'primary' }
+    );
   }
 
   /**

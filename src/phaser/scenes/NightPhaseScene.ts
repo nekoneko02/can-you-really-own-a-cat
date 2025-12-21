@@ -10,12 +10,13 @@
 import Phaser from 'phaser';
 import { AssetKeys } from '../assets/AssetKeys';
 import { GameController } from '@/application/GameController';
+import { BaseButton } from '@/phaser/ui/components/BaseButton';
 
 /**
  * NightPhaseScene
  */
 export class NightPhaseScene extends Phaser.Scene {
-  private sleepButton?: Phaser.GameObjects.Zone;
+  private sleepButton?: BaseButton;
   private gameController!: GameController;
 
   constructor() {
@@ -95,40 +96,17 @@ export class NightPhaseScene extends Phaser.Scene {
    * 「寝る」ボタンを作成
    */
   private createSleepButton(): void {
-    // ボタン背景（Graphics）
-    const buttonBg = this.add.graphics();
-    buttonBg.fillStyle(0x666666, 1);
-    buttonBg.fillRoundedRect(300, 400, 200, 50, 10);
-
-    // ボタンテキスト
-    const buttonText = this.add.text(400, 425, '寝る', {
-      fontSize: '24px',
-      color: '#ffffff',
-    });
-    buttonText.setOrigin(0.5, 0.5);
-
-    // インタラクティブゾーン
-    this.sleepButton = this.add.zone(400, 425, 200, 50);
-    this.sleepButton.setInteractive({ useHandCursor: true });
-
-    // ホバー時の色変更
-    this.sleepButton.on('pointerover', () => {
-      buttonBg.clear();
-      buttonBg.fillStyle(0x888888, 1); // 明るい灰色
-      buttonBg.fillRoundedRect(300, 400, 200, 50, 10);
-    });
-
-    this.sleepButton.on('pointerout', () => {
-      buttonBg.clear();
-      buttonBg.fillStyle(0x666666, 1); // 通常の灰色
-      buttonBg.fillRoundedRect(300, 400, 200, 50, 10);
-    });
-
-    // クリックイベント
-    this.sleepButton.on('pointerdown', () => {
-      console.log('[NightPhaseScene] 寝るボタンがクリックされました');
-      this.onSleepButtonClicked();
-    });
+    this.sleepButton = new BaseButton(
+      this,
+      400,
+      425,
+      '寝る',
+      () => {
+        console.log('[NightPhaseScene] 寝るボタンがクリックされました');
+        this.onSleepButtonClicked();
+      },
+      { size: 'primary' }
+    );
   }
 
   /**
