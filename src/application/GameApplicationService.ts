@@ -9,8 +9,11 @@
 import { Game, GameParams } from '@/domain/Game';
 import { GamePhase } from '@/domain/types';
 import { NightCryActionType } from '@/domain/nightcry/actions/NightCryActionType';
+import { NightCryActionSelector } from '@/domain/nightcry/NightCryActionSelector';
+import { AutonomousActionType } from '@/domain/autonomous/AutonomousActionType';
 import { TimeService } from './TimeService';
 import { NightCryEventService, NightCryEventState } from './NightCryEventService';
+import { CatBehaviorService } from './CatBehaviorService';
 import { PlayerInput, GameView, PlayerViewModel, CatViewModel } from './types';
 
 /**
@@ -36,11 +39,24 @@ export class GameApplicationService {
   private game: Game;
   private timeService: TimeService;
   private nightCryEventService: NightCryEventService;
+  private catBehaviorService: CatBehaviorService;
+  private nightCryActionSelector: NightCryActionSelector;
+  private lastPhase: GamePhase;
 
   constructor(params: GameParams) {
     this.game = new Game(params);
     this.timeService = new TimeService();
     this.nightCryEventService = new NightCryEventService(this.timeService);
+    this.catBehaviorService = new CatBehaviorService(this.timeService);
+    this.nightCryActionSelector = new NightCryActionSelector();
+
+    // 初期フェーズを記録
+    this.lastPhase = this.game.getPhase();
+
+    // 初期フェーズに応じた猫の振る舞いを設定
+    const cat = this.game['cat'];
+    const history = this.game.getEventHistory();
+    this.catBehaviorService.onPhaseChange(cat, this.lastPhase, history);
   }
 
   /**
@@ -51,6 +67,16 @@ export class GameApplicationService {
   update(input: PlayerInput, deltaMs: number): void {
     // 時間を更新
     this.timeService.update(deltaMs);
+
+    // フェーズ変更の検出と猫の振る舞い更新
+    const currentPhase = this.game.getPhase();
+    if (currentPhase !== this.lastPhase) {
+      console.log(`[GameApplicationService] フェーズ変更検出: ${this.lastPhase} -> ${currentPhase}`);
+      const cat = this.game['cat'];
+      const history = this.game.getEventHistory();
+      this.catBehaviorService.onPhaseChange(cat, currentPhase, history);
+      this.lastPhase = currentPhase;
+    }
 
     // 移動入力の処理
     if (input.direction) {
@@ -70,18 +96,107 @@ export class GameApplicationService {
       }
     }
 
+    // 猫の自律的振る舞いを更新
+    const cat = this.game['cat'];
+    this.catBehaviorService.update(cat);
+
     // ゲーム状態の更新
     this.game.update();
   }
 
   /**
    * 夜泣きイベントのアクションを選択
+   *
+   * べき等性: 同じアクションなら何もしない（毎フレーム呼び出しても安全）
    */
   selectNightCryAction(actionType: NightCryActionType): void {
     if (!this.nightCryEventService.isActive()) {
       return;
     }
+
+    const cat = this.game['cat'];
+    const targetAction = this.mapNightCryToAutonomousAction(actionType);
+
+    // べき等性: 同じアクションなら何もしない
+    if (cat.autonomousBehaviorState.currentAction === targetAction) {
+      return;
+    }
+
+    // NightCryEventService に通知
     this.nightCryEventService.selectAction(actionType);
+
+    // RETURN_CAT の場合は先に表示状態を復元
+    if (actionType === NightCryActionType.RETURN_CAT) {
+      cat.setVisible(true);
+    }
+
+    // 選択肢に応じて猫の自律的振る舞いを切り替え
+    if (targetAction) {
+      this.catBehaviorService.startAction(cat, targetAction);
+      console.log(`[GameApplicationService] 夜泣き選択肢 ${actionType} → 自律アクション ${targetAction} に切り替え`);
+    }
+  }
+
+  /**
+   * 夜泣きアクションタイプを自律的アクションタイプにマッピング
+   *
+   * 分岐はここに集約（多態性の入り口）
+   */
+  private mapNightCryToAutonomousAction(
+    nightCryAction: NightCryActionType
+  ): AutonomousActionType | null {
+    switch (nightCryAction) {
+      case NightCryActionType.PLAYING:
+        // 遊んであげる → 一人遊び（嬉しそうに遊ぶ）
+        return AutonomousActionType.IDLE_PLAYING;
+      case NightCryActionType.PETTING:
+        // 撫でてあげる → 撫でられ中（落ち着く）
+        return AutonomousActionType.BEING_PETTED;
+      case NightCryActionType.FEEDING_SNACK:
+        // おやつをあげる → 座る（食べる）
+        return AutonomousActionType.SITTING;
+      case NightCryActionType.CATCHING:
+        // 猫を捕まえようとする → 逃げる
+        return AutonomousActionType.FLEEING;
+      case NightCryActionType.LOCKED_OUT:
+        // 猫を締め出し中 → 締め出し中
+        return AutonomousActionType.LOCKED_OUT;
+      case NightCryActionType.IGNORING:
+        // 無視して寝続ける → 鳴く（継続）
+        return AutonomousActionType.MEOWING;
+      case NightCryActionType.STOP_CARE:
+        // 遊ぶ/撫でるをやめる → ケア後待機
+        return AutonomousActionType.WAITING_AFTER_CARE;
+      case NightCryActionType.RETURN_CAT:
+        // 締め出しから猫を戻す → 鳴く（復帰）
+        return AutonomousActionType.MEOWING;
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * ケアを停止して待機状態に遷移
+   * @deprecated selectNightCryAction(STOP_CARE) を使用してください
+   */
+  stopCare(): void {
+    this.selectNightCryAction(NightCryActionType.STOP_CARE);
+  }
+
+  /**
+   * 締め出しを解除して猫を部屋に戻す
+   * @deprecated selectNightCryAction(RETURN_CAT) を使用してください
+   */
+  returnCatToRoom(): void {
+    this.selectNightCryAction(NightCryActionType.RETURN_CAT);
+  }
+
+  /**
+   * 朝シーンへの遷移条件を確認
+   */
+  checkMorningTransitionCondition(): boolean {
+    const cat = this.game['cat'];
+    return this.catBehaviorService.checkMorningTransitionWithCat(cat);
   }
 
   /**
@@ -108,6 +223,7 @@ export class GameApplicationService {
       state: cat.state,
       mood: cat.mood,
       animation: cat.currentAnimation,
+      isVisible: cat.isVisible,
     };
 
     return {
@@ -137,6 +253,16 @@ export class GameApplicationService {
       satisfaction: state.satisfaction,
       resignation: state.resignation,
     };
+  }
+
+  /**
+   * 夜泣きイベントで選択可能なアクション一覧を取得
+   *
+   * ドメイン層のNightCryActionSelectorに委譲
+   */
+  getAvailableNightCryActions(): NightCryActionType[] {
+    const state = this.nightCryEventService.getState();
+    return this.nightCryActionSelector.getAvailableActions(state.currentAction);
   }
 
   /**
@@ -174,6 +300,13 @@ export class GameApplicationService {
    */
   getGame(): Game {
     return this.game;
+  }
+
+  /**
+   * 猫の振る舞いサービスを取得（テスト用）
+   */
+  getCatBehaviorService(): CatBehaviorService {
+    return this.catBehaviorService;
   }
 
   private processMovement(direction: any): void {

@@ -221,9 +221,14 @@ export class RoomScene extends Phaser.Scene {
 
       // UIを更新
       if (!this.nightCryUIManager.isShown()) {
-        this.nightCryUIManager.showWithState(nightCryState, (actionType) => {
-          this.handleNightCryActionSelected(actionType);
-        });
+        const availableActions = this.appService.getAvailableNightCryActions();
+        this.nightCryUIManager.showWithState(
+          nightCryState,
+          (actionType) => {
+            this.handleNightCryActionSelected(actionType);
+          },
+          availableActions
+        );
       }
     } else {
       // イベントが非アクティブならUIを非表示
@@ -354,9 +359,14 @@ export class RoomScene extends Phaser.Scene {
     // UIを再表示
     this.nightCryUIManager.hide();
     const nightCryState = this.appService.getNightCryEventState();
-    this.nightCryUIManager.showWithState(nightCryState, (nextActionType) => {
-      this.handleNightCryActionSelected(nextActionType);
-    });
+    const availableActions = this.appService.getAvailableNightCryActions();
+    this.nightCryUIManager.showWithState(
+      nightCryState,
+      (nextActionType) => {
+        this.handleNightCryActionSelected(nextActionType);
+      },
+      availableActions
+    );
   }
 
   /**
@@ -381,9 +391,14 @@ export class RoomScene extends Phaser.Scene {
       // UIを再表示
       this.nightCryUIManager.hide();
       const updatedState = this.appService.getNightCryEventState();
-      this.nightCryUIManager.showWithState(updatedState, (actionType) => {
-        this.handleNightCryActionSelected(actionType);
-      });
+      const availableActions = this.appService.getAvailableNightCryActions();
+      this.nightCryUIManager.showWithState(
+        updatedState,
+        (actionType) => {
+          this.handleNightCryActionSelected(actionType);
+        },
+        availableActions
+      );
     }
   }
 }

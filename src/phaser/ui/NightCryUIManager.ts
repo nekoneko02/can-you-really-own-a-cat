@@ -30,6 +30,7 @@ export class NightCryUIManager {
   private onActionSelected: ((actionType: NightCryActionType) => void) | null = null;
   private currentCat: Cat | null = null;
   private currentState: NightCryEventState | null = null;
+  private availableActions: NightCryActionType[] = [];
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -59,8 +60,13 @@ export class NightCryUIManager {
    * 夜泣きイベントUIを表示（新方式：状態DTOを使用）
    * @param state 夜泣きイベント状態
    * @param onActionSelected アクション選択時のコールバック
+   * @param availableActions 選択可能なアクション一覧（ドメイン層から取得）
    */
-  showWithState(state: NightCryEventState, onActionSelected: (actionType: NightCryActionType) => void): void {
+  showWithState(
+    state: NightCryEventState,
+    onActionSelected: (actionType: NightCryActionType) => void,
+    availableActions?: NightCryActionType[]
+  ): void {
     if (this.isActive) {
       return;
     }
@@ -68,6 +74,7 @@ export class NightCryUIManager {
     this.isActive = true;
     this.onActionSelected = onActionSelected;
     this.currentState = state;
+    this.availableActions = availableActions || [];
 
     // 現在のアクション状態に応じたメッセージを表示
     const currentAction = state.currentAction;
@@ -208,36 +215,91 @@ export class NightCryUIManager {
 
   /**
    * アクション実行中の選択肢を表示
+   *
+   * ドメイン層から渡された選択可能なアクション（availableActions）を使用して
+   * 選択肢を表示する。UI固有の階層構造（初期選択肢、第2階層など）も考慮する。
    */
   private showActionInProgressChoices(actionType: NightCryActionType): void {
-    const choices: Array<{ text: string; action: NightCryActionType | 'STOP' | 'WAKE_UP' | 'TRY_TO_CATCH' }> = [];
+    // ドメイン層から選択可能なアクションが渡されている場合はそれを使用
+    if (this.availableActions.length > 0) {
+      this.showChoicesFromAvailableActions();
+      return;
+    }
+
+    // 後方互換: availableActionsが渡されていない場合は従来のロジック
+    const choices: Array<{ text: string; action: NightCryActionType | 'WAKE_UP' | 'TRY_TO_CATCH' }> = [];
 
     switch (actionType) {
       case NightCryActionType.PLAYING:
       case NightCryActionType.PETTING:
-        choices.push({ text: 'やめる', action: 'STOP' });
+        choices.push({ text: 'やめる', action: NightCryActionType.STOP_CARE });
         break;
       case NightCryActionType.IGNORING:
-        // 無視アクション中は初期選択肢に戻る
         this.showInitialChoices();
         return;
       case NightCryActionType.FEEDING_SNACK:
-        // おやつは即座に終わるので、第2階層の選択肢を表示
         this.showSecondLevelChoices();
         return;
       case NightCryActionType.CATCHING:
-        // 猫を捕まえようとしている最中は選択肢なし（自動進行）
         break;
       case NightCryActionType.LOCKED_OUT:
-        // 締め出し中は「やっぱり部屋に戻す」選択肢を表示
         choices.push(
-          { text: 'やっぱり猫を部屋に戻す', action: 'STOP' }
+          { text: 'やっぱり猫を部屋に戻す', action: NightCryActionType.RETURN_CAT }
         );
         break;
+      case NightCryActionType.STOP_CARE:
+      case NightCryActionType.RETURN_CAT:
+        // やめる/戻す後は第2階層の選択肢を表示
+        this.showSecondLevelChoices();
+        return;
     }
 
     if (choices.length > 0) {
       this.createChoiceButtons(choices);
+    }
+  }
+
+  /**
+   * ドメイン層から渡された選択可能なアクションを表示
+   */
+  private showChoicesFromAvailableActions(): void {
+    const choices: Array<{ text: string; action: NightCryActionType }> = [];
+
+    for (const action of this.availableActions) {
+      const label = this.getActionLabel(action);
+      if (label) {
+        choices.push({ text: label, action });
+      }
+    }
+
+    if (choices.length > 0) {
+      this.createChoiceButtons(choices);
+    }
+  }
+
+  /**
+   * アクションタイプに対応するラベルを取得
+   */
+  private getActionLabel(action: NightCryActionType): string | null {
+    switch (action) {
+      case NightCryActionType.PLAYING:
+        return '遊んであげる';
+      case NightCryActionType.PETTING:
+        return '撫でてあげる';
+      case NightCryActionType.FEEDING_SNACK:
+        return 'おやつをあげる';
+      case NightCryActionType.IGNORING:
+        return 'やっぱり無視して寝る';
+      case NightCryActionType.CATCHING:
+        return '猫を別の部屋に追い出す';
+      case NightCryActionType.STOP_CARE:
+        return 'やめる';
+      case NightCryActionType.RETURN_CAT:
+        return 'やっぱり猫を部屋に戻す';
+      case NightCryActionType.LOCKED_OUT:
+        return null; // LOCKED_OUTは選択肢として表示しない
+      default:
+        return null;
     }
   }
 
@@ -258,7 +320,7 @@ export class NightCryUIManager {
   /**
    * 選択肢ボタンを生成
    */
-  private createChoiceButtons(choices: Array<{ text: string; action: NightCryActionType | 'STOP' | 'WAKE_UP' | 'TRY_TO_CATCH' }>): void {
+  private createChoiceButtons(choices: Array<{ text: string; action: NightCryActionType | 'WAKE_UP' | 'TRY_TO_CATCH' }>): void {
     this.clearChoiceButtons();
 
     const buttonX = UILayout.choiceButton.x; // 右端中央
@@ -288,7 +350,7 @@ export class NightCryUIManager {
   /**
    * 選択肢がクリックされた時の処理
    */
-  private onChoiceClicked(action: NightCryActionType | 'STOP' | 'WAKE_UP' | 'TRY_TO_CATCH'): void {
+  private onChoiceClicked(action: NightCryActionType | 'WAKE_UP' | 'TRY_TO_CATCH'): void {
     if (action === 'WAKE_UP') {
       // 起きて様子を見る → 第2階層の選択肢を表示
       this.clearChoiceButtons();
@@ -312,22 +374,8 @@ export class NightCryUIManager {
       return;
     }
 
-    if (action === 'STOP') {
-      // アクション停止
-      const currentAction = this.currentState?.currentAction ?? this.currentCat?.nightCryState?.currentAction;
-
-      // LOCKED_OUTからの停止は初期選択肢に戻る
-      if (currentAction === NightCryActionType.LOCKED_OUT) {
-        this.clearChoiceButtons();
-        this.showInitialChoices();
-      } else {
-        // その他のアクションからの停止は第2階層に戻る
-        this.clearChoiceButtons();
-        this.showSecondLevelChoices();
-      }
-      return;
-    }
-
+    // すべてのNightCryActionTypeをコールバックで通知
+    // （STOP_CARE, RETURN_CAT を含む）
     if (this.onActionSelected) {
       this.onActionSelected(action);
     }
