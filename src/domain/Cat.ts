@@ -7,6 +7,10 @@
 
 import { CatState, CatMood, ToyType } from './types';
 import { NightCryActionType } from './nightcry/actions/NightCryActionType';
+import {
+  AutonomousBehaviorState,
+  createInitialAutonomousBehaviorState,
+} from './autonomous/AutonomousBehaviorState';
 
 // 画面境界（ピクセル単位）
 const WORLD_BOUNDS = {
@@ -48,6 +52,7 @@ export class Cat {
   public mood: CatMood;
   public currentAnimation: string;
   public nightCryState: NightCryState;
+  public autonomousBehaviorState: AutonomousBehaviorState;
 
   constructor(params: CatParams = {}) {
     this.name = params.name ?? 'たま';
@@ -57,6 +62,7 @@ export class Cat {
     this.mood = params.mood ?? CatMood.NEUTRAL;
     this.currentAnimation = this.getAnimationForState(this.state);
     this.nightCryState = this.createInitialNightCryState();
+    this.autonomousBehaviorState = createInitialAutonomousBehaviorState();
   }
 
   /**
@@ -144,6 +150,42 @@ export class Cat {
   public updateNightCryState(state: Partial<NightCryState>): void {
     this.nightCryState = {
       ...this.nightCryState,
+      ...state,
+    };
+  }
+
+  /**
+   * 自律的振る舞い状態をリセット
+   */
+  public resetAutonomousBehaviorState(): void {
+    this.autonomousBehaviorState = createInitialAutonomousBehaviorState();
+  }
+
+  /**
+   * 猫の表示状態を取得
+   */
+  public get isVisible(): boolean {
+    return this.autonomousBehaviorState.isVisible;
+  }
+
+  /**
+   * 猫の表示状態を設定
+   */
+  public setVisible(visible: boolean): void {
+    this.autonomousBehaviorState = {
+      ...this.autonomousBehaviorState,
+      isVisible: visible,
+    };
+  }
+
+  /**
+   * 自律的振る舞い状態を更新
+   */
+  public updateAutonomousBehaviorState(
+    state: Partial<AutonomousBehaviorState>
+  ): void {
+    this.autonomousBehaviorState = {
+      ...this.autonomousBehaviorState,
       ...state,
     };
   }

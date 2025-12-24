@@ -11,6 +11,8 @@ export const NightCryActionType = {
   IGNORING: 'IGNORING',         // 無視して寝続ける
   CATCHING: 'CATCHING',         // 猫を捕まえようとする
   LOCKED_OUT: 'LOCKED_OUT',     // 猫を締め出し中
+  STOP_CARE: 'STOP_CARE',       // 遊ぶ/撫でるをやめる
+  RETURN_CAT: 'RETURN_CAT',     // 締め出しから猫を戻す
 } as const;
 
 export type NightCryActionType =

@@ -39,6 +39,7 @@ export interface CatViewModel {
   state: CatState;
   mood: CatMood;
   animation: string;
+  isVisible: boolean;
 }
 
 export interface GameView {

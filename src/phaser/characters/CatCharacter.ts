@@ -55,11 +55,28 @@ export class CatCharacter {
    * @param viewModel - 猫のViewModel
    */
   update(viewModel: CatViewModel): void {
+    // 表示状態を更新
+    this.sprite.setVisible(viewModel.isVisible);
+
+    // 非表示の場合は位置・アニメーション更新をスキップ
+    if (!viewModel.isVisible) {
+      return;
+    }
+
     // 位置を更新
     this.sprite.setPosition(viewModel.x, viewModel.y);
 
     // アニメーション更新
     this.updateAnimation(viewModel.animation);
+  }
+
+  /**
+   * 表示状態を設定
+   *
+   * @param visible - 表示するかどうか
+   */
+  setVisible(visible: boolean): void {
+    this.sprite.setVisible(visible);
   }
 
   /**

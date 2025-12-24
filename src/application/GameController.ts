@@ -75,6 +75,7 @@ export class GameController {
       state: cat.state,
       mood: cat.mood,
       animation: cat.currentAnimation,
+      isVisible: cat.isVisible,
     };
 
     return {
