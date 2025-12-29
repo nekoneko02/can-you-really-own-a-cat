@@ -75,6 +75,9 @@ export class RoomScene extends Phaser.Scene {
       catName: catName || undefined,
     });
 
+    // Registryに登録（UISceneから参照可能にする）
+    this.registry.set('appService', this.appService);
+
     // イベントがある場合はMIDNIGHT_EVENTフェーズに設定
     // （NightPhaseSceneからの遷移時、フェーズがNIGHT_PREPになっているため）
     if (this.hasEvent) {

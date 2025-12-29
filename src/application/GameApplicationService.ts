@@ -11,6 +11,7 @@ import { GamePhase } from '@/domain/types';
 import { NightCryActionType } from '@/domain/nightcry/actions/NightCryActionType';
 import { NightCryActionSelector } from '@/domain/nightcry/NightCryActionSelector';
 import { AutonomousActionType } from '@/domain/autonomous/AutonomousActionType';
+import { getTimeScale } from '@/domain/time/TimeScales';
 import { TimeService } from './TimeService';
 import { NightCryEventService, NightCryEventState } from './NightCryEventService';
 import { CatBehaviorService } from './CatBehaviorService';
@@ -65,7 +66,11 @@ export class GameApplicationService {
    * @param deltaMs 経過ミリ秒
    */
   update(input: PlayerInput, deltaMs: number): void {
-    // 時間を更新
+    // 時間を更新（Game経由で時刻を進める）
+    this.game.updateTime(deltaMs);
+
+    // TimeServiceも更新（CatBehaviorService/NightCryEventServiceが使用）
+    // TODO: 将来的にTimeServiceへの依存を削除し、Game経由に統一する
     this.timeService.update(deltaMs);
 
     // フェーズ変更の検出と猫の振る舞い更新
@@ -125,6 +130,10 @@ export class GameApplicationService {
     // NightCryEventService に通知
     this.nightCryEventService.selectAction(actionType);
 
+    // アクションに応じた時間スケールを設定
+    const scale = getTimeScale(actionType);
+    this.game.setTimeScale(scale);
+
     // RETURN_CAT の場合は先に表示状態を復元
     if (actionType === NightCryActionType.RETURN_CAT) {
       cat.setVisible(true);
@@ -133,7 +142,7 @@ export class GameApplicationService {
     // 選択肢に応じて猫の自律的振る舞いを切り替え
     if (targetAction) {
       this.catBehaviorService.startAction(cat, targetAction);
-      console.log(`[GameApplicationService] 夜泣き選択肢 ${actionType} → 自律アクション ${targetAction} に切り替え`);
+      console.log(`[GameApplicationService] 夜泣き選択肢 ${actionType} → 自律アクション ${targetAction} に切り替え (スケール: ${scale})`);
     }
   }
 
@@ -228,7 +237,7 @@ export class GameApplicationService {
 
     return {
       phase: this.game.getPhase(),
-      time: this.timeService.getDisplayTime(),
+      time: this.game.getCurrentTime(),
       day: this.game.getCurrentDay(),
       player: playerViewModel,
       cat: catViewModel,
@@ -322,7 +331,7 @@ export class GameApplicationService {
     if (phase === GamePhase.MIDNIGHT_EVENT && currentEvent && !this.nightCryEventService.isActive()) {
       if (currentEvent.id.includes('night_crying')) {
         this.nightCryEventService.start();
-        this.timeService.setDisplayTime(300); // 3:00
+        // 時刻はGame.transitionToMidnight()で設定済み
       }
     }
   }
@@ -336,8 +345,7 @@ export class GameApplicationService {
     // イベント完了をGameに通知
     this.game.completeCurrentEvent();
 
-    // 朝フェーズに遷移
+    // 朝フェーズに遷移（時刻はGame.transitionToMorning()で設定される）
     this.game.transitionToMorning();
-    this.timeService.setDisplayTime(700); // 7:00
   }
 }

@@ -88,4 +88,64 @@ describe('Game', () => {
       expect(history[0].emotion.burden).toBe(4);
     });
   });
+
+  describe('time progression', () => {
+    it('should advance time with updateTime(deltaMs)', () => {
+      const game = new Game({ scenarioId: 'night_crying' });
+      expect(game.getCurrentTime()).toBe(2200); // 22:00
+
+      // 1分経過（60000ms）- デフォルトスケール1.0
+      game.updateTime(60000);
+
+      expect(game.getCurrentTime()).toBe(2201); // 22:01
+    });
+
+    it('should advance time with scale applied', () => {
+      const game = new Game({ scenarioId: 'night_crying' });
+      expect(game.getCurrentTime()).toBe(2200); // 22:00
+
+      // スケール30倍を設定
+      game.setTimeScale(30.0);
+
+      // 現実1秒（1000ms）= ゲーム内30秒
+      // 現実2秒（2000ms）= ゲーム内1分
+      game.updateTime(2000);
+
+      expect(game.getCurrentTime()).toBe(2201); // 22:01
+    });
+
+    it('should advance time across hour boundary', () => {
+      const game = new Game({ scenarioId: 'night_crying' });
+      expect(game.getCurrentTime()).toBe(2200); // 22:00
+
+      // 60分経過
+      game.updateTime(60 * 60000);
+
+      expect(game.getCurrentTime()).toBe(2300); // 23:00
+    });
+
+    it('should wrap around midnight', () => {
+      const game = new Game({ scenarioId: 'night_crying' });
+      expect(game.getCurrentTime()).toBe(2200); // 22:00
+
+      // 3時間経過（22:00 → 01:00）
+      game.updateTime(3 * 60 * 60000);
+
+      expect(game.getCurrentTime()).toBe(100); // 01:00
+    });
+
+    it('should reset time scale when transitioning phase', () => {
+      const game = new Game({ scenarioId: 'night_crying' });
+
+      game.setTimeScale(30.0);
+      game.transitionToMidnight();
+
+      // フェーズ遷移でスケールは1.0にリセット
+      expect(game.getCurrentTime()).toBe(300); // 3:00
+
+      // 1分経過
+      game.updateTime(60000);
+      expect(game.getCurrentTime()).toBe(301); // 3:01
+    });
+  });
 });

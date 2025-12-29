@@ -10,7 +10,7 @@
  */
 
 import Phaser from 'phaser';
-import { PhaserGameController } from '../controllers/PhaserGameController';
+import { GameApplicationService } from '@/application/GameApplicationService';
 import { EventUIManager } from '../ui/EventUIManager';
 import { ProgressIndicator } from '../ui/ProgressIndicator';
 
@@ -18,7 +18,7 @@ import { ProgressIndicator } from '../ui/ProgressIndicator';
  * UIScene
  */
 export class UIScene extends Phaser.Scene {
-  private controller!: PhaserGameController;
+  private appService!: GameApplicationService;
   private progressIndicator?: ProgressIndicator;
   private eventUIManager?: EventUIManager;
 
@@ -32,15 +32,15 @@ export class UIScene extends Phaser.Scene {
   init(): void {
     console.log('[UIScene] 初期化開始');
 
-    // Registryからcontrollerを取得
-    const gameController = this.registry.get('gameController');
-    if (!gameController) {
-      throw new Error('GameController not found in registry');
+    // RegistryからappServiceを取得
+    const appService = this.registry.get('appService');
+    if (!appService) {
+      throw new Error('GameApplicationService not found in registry');
     }
 
-    this.controller = new PhaserGameController(gameController);
+    this.appService = appService;
 
-    console.log('[UIScene] GameController取得完了');
+    console.log('[UIScene] GameApplicationService取得完了');
   }
 
   /**
@@ -53,7 +53,7 @@ export class UIScene extends Phaser.Scene {
     this.progressIndicator = new ProgressIndicator(this, 20, 20);
 
     // イベントUIマネージャー（中央下）
-    this.eventUIManager = new EventUIManager(this, this.controller);
+    this.eventUIManager = new EventUIManager(this, this.appService);
 
     console.log('[UIScene] シーン作成完了');
   }
@@ -62,8 +62,8 @@ export class UIScene extends Phaser.Scene {
    * 毎フレーム更新
    */
   update(): void {
-    // GameControllerから最新状態を取得
-    const gameView = this.controller.view();
+    // GameApplicationServiceから最新状態を取得
+    const gameView = this.appService.getView();
 
     // 進行状況を更新
     this.progressIndicator?.update(gameView.day, gameView.time, gameView.phase);

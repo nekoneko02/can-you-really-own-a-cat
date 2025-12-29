@@ -7,22 +7,22 @@
 
 import { GameEvent } from '@/domain/GameEvent';
 import { EventStep } from '@/domain/EventStep';
-import { PhaserGameController } from '@/phaser/controllers/PhaserGameController';
+import { GameApplicationService } from '@/application/GameApplicationService';
 import { DialogSystem } from './DialogSystem';
 import { ChoiceButton } from './ChoiceButton';
 import { UILayout } from './UIConstants';
 
 export class EventUIManager {
   private scene: Phaser.Scene;
-  private controller: PhaserGameController;
+  private appService: GameApplicationService;
   private dialogSystem: DialogSystem;
   private choiceButtons: ChoiceButton[] = [];
   private currentEvent: GameEvent | null = null;
   private currentScenarioStep: EventStep | null = null;
 
-  constructor(scene: Phaser.Scene, controller: PhaserGameController) {
+  constructor(scene: Phaser.Scene, appService: GameApplicationService) {
     this.scene = scene;
-    this.controller = controller;
+    this.appService = appService;
     this.dialogSystem = new DialogSystem(scene);
   }
 
@@ -167,8 +167,8 @@ export class EventUIManager {
    * @param choiceId 選択肢のID
    */
   private onChoiceSelected(choiceId: string): void {
-    // GameControllerに選択肢を送信
-    this.controller.tick({ choice: choiceId });
+    // Game経由で選択肢を実行
+    this.appService.getGame().executeChoice(choiceId);
   }
 
   /**

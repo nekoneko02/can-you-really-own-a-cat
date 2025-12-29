@@ -34,6 +34,8 @@ export class Game {
   private currentPhase: GamePhase;
   private currentDay: number;
   private currentTime: number; // 時刻（24時間形式の数値、例: 2200 = 22:00）
+  private timeScale: number; // 時間スケール（1.0 = 等倍）
+  private accumulatedMs: number; // 累積ミリ秒（1分未満の端数）
   private player: Player;
   private cat: Cat;
   private currentEvent: GameEvent | null;
@@ -48,6 +50,8 @@ export class Game {
     this.currentPhase = GamePhase.NIGHT_PREP;
     this.currentDay = 1;
     this.currentTime = 2200; // 22:00から開始
+    this.timeScale = 1.0; // デフォルトは等倍
+    this.accumulatedMs = 0;
     this.player = new Player({ x: 100, y: 100 });
     this.cat = new Cat({ name: params.catName, x: 200, y: 200 });
     this.currentEvent = null;
@@ -80,6 +84,52 @@ export class Game {
   }
 
   /**
+   * 時間スケールを設定
+   * @param scale スケール倍率（1.0 = 等倍、30.0 = 30倍速）
+   */
+  public setTimeScale(scale: number): void {
+    this.timeScale = Math.max(0, scale);
+  }
+
+  /**
+   * 時刻を進める
+   * @param deltaMs 経過ミリ秒（実時間）
+   */
+  public updateTime(deltaMs: number): void {
+    // スケールを適用した経過時間
+    const scaledMs = deltaMs * this.timeScale;
+    this.accumulatedMs += scaledMs;
+
+    // 1分（60000ms）ごとに時刻を進める
+    const minutesToAdd = Math.floor(this.accumulatedMs / 60000);
+    if (minutesToAdd > 0) {
+      this.accumulatedMs -= minutesToAdd * 60000;
+      this.currentTime = this.addMinutesToTime(this.currentTime, minutesToAdd);
+    }
+  }
+
+  /**
+   * 時刻に分を加算（HHMM形式）
+   * @param time 時刻（HHMM形式）
+   * @param minutes 加算する分
+   * @returns 加算後の時刻（HHMM形式）
+   */
+  private addMinutesToTime(time: number, minutes: number): number {
+    const hours = Math.floor(time / 100);
+    const mins = time % 100;
+
+    let totalMinutes = hours * 60 + mins + minutes;
+
+    // 24時間を超えた場合は翌日に
+    totalMinutes = totalMinutes % (24 * 60);
+
+    const newHours = Math.floor(totalMinutes / 60);
+    const newMins = totalMinutes % 60;
+
+    return newHours * 100 + newMins;
+  }
+
+  /**
    * イベント履歴を取得
    */
   public getEventHistory(): EventRecord[] {
@@ -92,6 +142,8 @@ export class Game {
   public transitionToMidnight(): void {
     this.currentPhase = GamePhase.MIDNIGHT_EVENT;
     this.currentTime = 300; // 3:00
+    this.timeScale = 1.0; // スケールをリセット
+    this.accumulatedMs = 0; // 累積時間をリセット
   }
 
   /**
@@ -100,6 +152,8 @@ export class Game {
   public transitionToMorning(): void {
     this.currentPhase = GamePhase.MORNING_OUTRO;
     this.currentTime = 700; // 7:00
+    this.timeScale = 1.0; // スケールをリセット
+    this.accumulatedMs = 0; // 累積時間をリセット
 
     // イベント関連フラグをリセット
     this.isWaitingForEmotion = false;
@@ -118,6 +172,8 @@ export class Game {
       this.currentPhase = GamePhase.NIGHT_PREP;
       this.currentTime = 2200; // 22:00
     }
+    this.timeScale = 1.0; // スケールをリセット
+    this.accumulatedMs = 0; // 累積時間をリセット
 
     // イベント関連フラグをリセット
     this.currentEvent = null;
