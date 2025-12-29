@@ -11,7 +11,6 @@ import { GamePhase } from '@/domain/types';
 import { NightCryActionType } from '@/domain/nightcry/actions/NightCryActionType';
 import { NightCryActionSelector } from '@/domain/nightcry/NightCryActionSelector';
 import { AutonomousActionType } from '@/domain/autonomous/AutonomousActionType';
-import { getTimeScale } from '@/domain/time/TimeScales';
 import { TimeService } from './TimeService';
 import { NightCryEventService, NightCryEventState } from './NightCryEventService';
 import { CatBehaviorService } from './CatBehaviorService';
@@ -130,10 +129,6 @@ export class GameApplicationService {
     // NightCryEventService に通知
     this.nightCryEventService.selectAction(actionType);
 
-    // アクションに応じた時間スケールを設定
-    const scale = getTimeScale(actionType);
-    this.game.setTimeScale(scale);
-
     // RETURN_CAT の場合は先に表示状態を復元
     if (actionType === NightCryActionType.RETURN_CAT) {
       cat.setVisible(true);
@@ -142,7 +137,7 @@ export class GameApplicationService {
     // 選択肢に応じて猫の自律的振る舞いを切り替え
     if (targetAction) {
       this.catBehaviorService.startAction(cat, targetAction);
-      console.log(`[GameApplicationService] 夜泣き選択肢 ${actionType} → 自律アクション ${targetAction} に切り替え (スケール: ${scale})`);
+      console.log(`[GameApplicationService] 夜泣き選択肢 ${actionType} → 自律アクション ${targetAction} に切り替え`);
     }
   }
 

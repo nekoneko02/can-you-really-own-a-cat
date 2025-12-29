@@ -134,17 +134,16 @@ describe('Game', () => {
       expect(game.getCurrentTime()).toBe(100); // 01:00
     });
 
-    it('should reset time scale when transitioning phase', () => {
+    it('should apply phase config when transitioning phase', () => {
       const game = new Game({ scenarioId: 'night_crying' });
 
-      game.setTimeScale(30.0);
       game.transitionToMidnight();
 
-      // フェーズ遷移でスケールは1.0にリセット
+      // MIDNIGHT_EVENTフェーズはPhaseConfigで30倍速
       expect(game.getCurrentTime()).toBe(300); // 3:00
 
-      // 1分経過
-      game.updateTime(60000);
+      // 現実2秒（2000ms）× 30倍 = ゲーム内1分
+      game.updateTime(2000);
       expect(game.getCurrentTime()).toBe(301); // 3:01
     });
   });

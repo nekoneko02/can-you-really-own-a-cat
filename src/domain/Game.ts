@@ -15,6 +15,7 @@ import { Choice } from './Choice';
 import { Consequence } from './Consequence';
 import { EventStep } from './EventStep';
 import { EventScheduler } from './EventScheduler';
+import { getPhaseConfig } from './nightcry/constants/PhaseConfig';
 
 const MAX_DAYS = 7;
 
@@ -49,9 +50,13 @@ export class Game {
     this.scenarioId = params.scenarioId;
     this.currentPhase = GamePhase.NIGHT_PREP;
     this.currentDay = 1;
-    this.currentTime = 2200; // 22:00から開始
-    this.timeScale = 1.0; // デフォルトは等倍
+
+    // フェーズ設定から初期値を取得
+    const initialConfig = getPhaseConfig(GamePhase.NIGHT_PREP);
+    this.currentTime = initialConfig.startTime;
+    this.timeScale = initialConfig.timeScale;
     this.accumulatedMs = 0;
+
     this.player = new Player({ x: 100, y: 100 });
     this.cat = new Cat({ name: params.catName, x: 200, y: 200 });
     this.currentEvent = null;
@@ -140,20 +145,14 @@ export class Game {
    * 夜中フェーズに移行
    */
   public transitionToMidnight(): void {
-    this.currentPhase = GamePhase.MIDNIGHT_EVENT;
-    this.currentTime = 300; // 3:00
-    this.timeScale = 1.0; // スケールをリセット
-    this.accumulatedMs = 0; // 累積時間をリセット
+    this.applyPhaseConfig(GamePhase.MIDNIGHT_EVENT);
   }
 
   /**
    * 朝フェーズに移行
    */
   public transitionToMorning(): void {
-    this.currentPhase = GamePhase.MORNING_OUTRO;
-    this.currentTime = 700; // 7:00
-    this.timeScale = 1.0; // スケールをリセット
-    this.accumulatedMs = 0; // 累積時間をリセット
+    this.applyPhaseConfig(GamePhase.MORNING_OUTRO);
 
     // イベント関連フラグをリセット
     this.isWaitingForEmotion = false;
@@ -167,18 +166,27 @@ export class Game {
     this.currentDay += 1;
 
     if (this.currentDay > MAX_DAYS) {
-      this.currentPhase = GamePhase.GAME_END;
+      this.applyPhaseConfig(GamePhase.GAME_END);
     } else {
-      this.currentPhase = GamePhase.NIGHT_PREP;
-      this.currentTime = 2200; // 22:00
+      this.applyPhaseConfig(GamePhase.NIGHT_PREP);
     }
-    this.timeScale = 1.0; // スケールをリセット
-    this.accumulatedMs = 0; // 累積時間をリセット
 
     // イベント関連フラグをリセット
     this.currentEvent = null;
     this.isWaitingForEmotion = false;
     console.log('[Game] 次の日に進みました。イベントフラグをリセットしました。');
+  }
+
+  /**
+   * フェーズ設定を適用
+   * @param phase 適用するフェーズ
+   */
+  private applyPhaseConfig(phase: GamePhase): void {
+    const config = getPhaseConfig(phase);
+    this.currentPhase = phase;
+    this.currentTime = config.startTime;
+    this.timeScale = config.timeScale;
+    this.accumulatedMs = 0;
   }
 
   /**
