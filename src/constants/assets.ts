@@ -28,6 +28,15 @@ export interface AssetImageConfig {
 }
 
 /**
+ * 音声アセット設定
+ */
+export interface AssetAudioConfig {
+  key: string;
+  url: string;
+  loop?: boolean; // ループ再生するかどうか
+}
+
+/**
  * 背景画像アセット
  */
 export const BACKGROUND_ASSETS: AssetImageConfig[] = [
@@ -56,49 +65,49 @@ export const PLAYER_ASSETS: AssetFrameConfig[] = [
   },
   {
     key: 'player_walk_up',
-    frames: [
+    frames: ['/assets/characters/player/idle.png'/*
       '/assets/characters/player/walk_up_1.png',
       '/assets/characters/player/walk_up_2.png',
       '/assets/characters/player/walk_up_3.png',
-      '/assets/characters/player/walk_up_4.png',
+      '/assets/characters/player/walk_up_4.png',*/
     ],
     frameRate: 8,
   },
   {
     key: 'player_walk_down',
-    frames: [
+    frames: ['/assets/characters/player/idle.png'/*
       '/assets/characters/player/walk_down_1.png',
       '/assets/characters/player/walk_down_2.png',
       '/assets/characters/player/walk_down_3.png',
-      '/assets/characters/player/walk_down_4.png',
+      '/assets/characters/player/walk_down_4.png',*/
     ],
     frameRate: 8,
   },
   {
     key: 'player_walk_left',
-    frames: [
-      '/assets/characters/player/walk_left_1.png',
+    frames: ['/assets/characters/player/idle.png'
+      /*'/assets/characters/player/walk_left_1.png',
       '/assets/characters/player/walk_left_2.png',
       '/assets/characters/player/walk_left_3.png',
-      '/assets/characters/player/walk_left_4.png',
+      '/assets/characters/player/walk_left_4.png',*/
     ],
     frameRate: 8,
   },
   {
     key: 'player_walk_right',
-    frames: [
+    frames: ['/assets/characters/player/idle.png'/*
       '/assets/characters/player/walk_right_1.png',
       '/assets/characters/player/walk_right_2.png',
       '/assets/characters/player/walk_right_3.png',
-      '/assets/characters/player/walk_right_4.png',
+      '/assets/characters/player/walk_right_4.png',*/
     ],
     frameRate: 8,
   },
   {
     key: 'player_interact',
-    frames: [
+    frames: ['/assets/characters/player/idle.png'/*
       '/assets/characters/player/interact_1.png',
-      '/assets/characters/player/interact_2.png',
+      '/assets/characters/player/interact_2.png',*/
     ],
     frameRate: 4,
   },
@@ -257,6 +266,32 @@ export const ICON_ASSETS: AssetImageConfig[] = [
   },
 ];
 
+/**
+ * 音声アセット（夜泣きイベント用）
+ */
+export const AUDIO_ASSETS: AssetAudioConfig[] = [
+  {
+    key: 'meow_loud_loop',
+    url: '/assets/audio/meow_loud_loop.mp3',
+    loop: true,
+  },
+  {
+    key: 'meow_louder_loop',
+    url: '/assets/audio/meow_louder_loop.mp3',
+    loop: true,
+  },
+  {
+    key: 'meow_morning',
+    url: '/assets/audio/meow_morning.mp3',
+    loop: false,
+  },
+  {
+    key: 'wall_knock',
+    url: '/assets/audio/wall_knock.mp3',
+    loop: false,
+  },
+];
+
 // ===== ヘルパー関数 =====
 
 /**
@@ -306,4 +341,18 @@ export const getAllFrameAssets = (): AssetFrameConfig[] => {
  */
 export const getAllImageAssets = (): AssetImageConfig[] => {
   return [...BACKGROUND_ASSETS, ...OBJECT_ASSETS, ...UI_ASSETS, ...ICON_ASSETS];
+};
+
+/**
+ * Phaser用の全音声アセット一覧を取得
+ */
+export const getAllAudioAssets = (): AssetAudioConfig[] => {
+  return [...AUDIO_ASSETS];
+};
+
+/**
+ * 指定キーの音声アセット設定を取得
+ */
+export const getAudioAssetConfig = (key: string): AssetAudioConfig | undefined => {
+  return AUDIO_ASSETS.find((asset) => asset.key === key);
 };

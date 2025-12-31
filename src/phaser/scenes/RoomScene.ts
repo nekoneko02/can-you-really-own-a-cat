@@ -26,6 +26,8 @@ import { MorningPhaseSceneParams } from './MorningPhaseScene';
 import { NightCryUIManager } from '../ui/NightCryUIManager';
 import { NightCryActionType } from '@/domain/nightcry/actions/NightCryActionType';
 import { GameApplicationService } from '@/application/GameApplicationService';
+import { AudioManager } from '../audio/AudioManager';
+import { NightCryAudioController } from '../audio/NightCryAudioController';
 
 /**
  * RoomScene起動パラメータ
@@ -51,7 +53,10 @@ export class RoomScene extends Phaser.Scene {
   private lastCompletedBy?: 'satisfaction' | 'resignation' | null;
   private collisionDetector!: CollisionDetector;
   private nightCryUIManager!: NightCryUIManager;
+  private audioManager!: AudioManager;
+  private nightCryAudioController!: NightCryAudioController;
   private lastLoggedTime: number = 0;
+  private nightCryAudioStarted: boolean = false;
 
   constructor() {
     super({ key: 'RoomScene' });
@@ -121,6 +126,11 @@ export class RoomScene extends Phaser.Scene {
     // CollisionDetector と NightCryUIManager を初期化
     this.collisionDetector = new CollisionDetector();
     this.nightCryUIManager = new NightCryUIManager(this);
+
+    // AudioManager と NightCryAudioController を初期化
+    this.audioManager = new AudioManager(this);
+    this.nightCryAudioController = new NightCryAudioController(this.audioManager);
+    this.nightCryAudioStarted = false;
 
     // UISceneを起動（重ね合わせ）
     this.scene.launch('UIScene');
@@ -214,9 +224,18 @@ export class RoomScene extends Phaser.Scene {
         this.lastLoggedTime = currentTime;
       }
 
+      // イベント開始時に音声を再生
+      if (!this.nightCryAudioStarted) {
+        this.nightCryAudioController.onEventStart();
+        this.nightCryAudioStarted = true;
+      }
+
       // イベント完了直前に結果を保存（MorningPhaseScene へ渡すため）
       if (nightCryState.isCompleted) {
         this.saveNightCryResult(nightCryState);
+        // 音声停止
+        this.nightCryAudioController.onEventComplete();
+        this.nightCryAudioStarted = false;
       }
 
       // 猫を捕まえる処理（衝突判定）
@@ -237,6 +256,11 @@ export class RoomScene extends Phaser.Scene {
       // イベントが非アクティブならUIを非表示
       if (this.nightCryUIManager.isShown()) {
         this.nightCryUIManager.hide();
+      }
+      // 音声も停止
+      if (this.nightCryAudioStarted) {
+        this.nightCryAudioController.onEventComplete();
+        this.nightCryAudioStarted = false;
       }
     }
   }
@@ -358,6 +382,9 @@ export class RoomScene extends Phaser.Scene {
 
     // GameApplicationService にアクション選択を委譲
     this.appService.selectNightCryAction(actionType);
+
+    // アクション変更に応じた音声制御
+    this.nightCryAudioController.onActionChange(actionType);
 
     // UIを再表示
     this.nightCryUIManager.hide();

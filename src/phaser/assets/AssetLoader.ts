@@ -8,8 +8,10 @@ import { AssetKeys } from './AssetKeys';
 import {
   getAllFrameAssets,
   getAllImageAssets,
+  getAllAudioAssets,
   type AssetFrameConfig,
   type AssetImageConfig,
+  type AssetAudioConfig,
 } from '@/constants/assets';
 
 /**
@@ -158,6 +160,9 @@ export class AssetLoader {
 
     // 単一画像アセット（背景・オブジェクト・UI・アイコン）
     this.loadImageAssets(scene);
+
+    // 音声アセット
+    this.loadAudioAssets(scene);
   }
 
   /**
@@ -186,6 +191,19 @@ export class AssetLoader {
 
     for (const assetConfig of imageAssets) {
       scene.load.image(assetConfig.key, assetConfig.url);
+    }
+  }
+
+  /**
+   * 音声アセットを読み込む
+   *
+   * @param scene - Phaserシーン
+   */
+  private static loadAudioAssets(scene: Phaser.Scene): void {
+    const audioAssets = getAllAudioAssets();
+
+    for (const assetConfig of audioAssets) {
+      scene.load.audio(assetConfig.key, assetConfig.url);
     }
   }
 

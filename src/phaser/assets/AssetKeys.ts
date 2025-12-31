@@ -77,6 +77,16 @@ export const IconKeys = {
 } as const;
 
 /**
+ * 音声ファイルのキー
+ */
+export const AudioKeys = {
+  MeowLoudLoop: 'meow_loud_loop',
+  MeowLouderLoop: 'meow_louder_loop',
+  MeowMorning: 'meow_morning',
+  WallKnock: 'wall_knock',
+} as const;
+
+/**
  * すべてのアセットキーを統合
  */
 export const AssetKeys = {
@@ -86,6 +96,7 @@ export const AssetKeys = {
   Objects: ObjectKeys,
   UI: UIKeys,
   Icons: IconKeys,
+  Audio: AudioKeys,
 } as const;
 
 /**
@@ -97,3 +108,4 @@ export type CatKey = (typeof CatKeys)[keyof typeof CatKeys];
 export type ObjectKey = (typeof ObjectKeys)[keyof typeof ObjectKeys];
 export type UIKey = (typeof UIKeys)[keyof typeof UIKeys];
 export type IconKey = (typeof IconKeys)[keyof typeof IconKeys];
+export type AudioKey = (typeof AudioKeys)[keyof typeof AudioKeys];
