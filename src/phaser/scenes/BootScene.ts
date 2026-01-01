@@ -103,6 +103,28 @@ export class BootScene extends Phaser.Scene {
       this.scene.add('GameEndScene', GameEndScene, false);
     }
 
+    // 夜泣きフェーズシーン
+    if (!this.scene.manager.getScene('NightcryPhase1Scene')) {
+      const { NightcryPhase1Scene } = require('./nightcry/NightcryPhase1Scene');
+      this.scene.add('NightcryPhase1Scene', NightcryPhase1Scene, false);
+    }
+    if (!this.scene.manager.getScene('NightcryPhase2Scene')) {
+      const { NightcryPhase2Scene } = require('./nightcry/NightcryPhase2Scene');
+      this.scene.add('NightcryPhase2Scene', NightcryPhase2Scene, false);
+    }
+    if (!this.scene.manager.getScene('NightcryPhase3Scene')) {
+      const { NightcryPhase3Scene } = require('./nightcry/NightcryPhase3Scene');
+      this.scene.add('NightcryPhase3Scene', NightcryPhase3Scene, false);
+    }
+    if (!this.scene.manager.getScene('NightcryPhase4Scene')) {
+      const { NightcryPhase4Scene } = require('./nightcry/NightcryPhase4Scene');
+      this.scene.add('NightcryPhase4Scene', NightcryPhase4Scene, false);
+    }
+    if (!this.scene.manager.getScene('NightcryPhase5Scene')) {
+      const { NightcryPhase5Scene } = require('./nightcry/NightcryPhase5Scene');
+      this.scene.add('NightcryPhase5Scene', NightcryPhase5Scene, false);
+    }
+
     // NightPhaseSceneから開始（1日の始まり）
     this.scene.start('NightPhaseScene');
 
