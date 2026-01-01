@@ -32,6 +32,11 @@ export const UIColors = {
   dialogBg: 0x000000, // ダイアログ背景
   dialogBgAlpha: 0.85, // ダイアログ透明度
 
+  // シナリオ選択肢ボタン
+  choiceNormal: 0x555555, // 通常状態（グレー）
+  choiceHover: 0x3a5a8a, // ホバー状態（薄い青）
+  choiceSelected: 0x4a6fa5, // 選択状態（青）
+
   // ステータスバー
   statusAffection: 0xff6b9d, // なつき度（ピンク）
   statusStress: 0xffaa00, // ストレス（オレンジ）
