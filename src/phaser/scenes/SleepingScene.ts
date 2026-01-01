@@ -140,12 +140,9 @@ export class SleepingScene extends Phaser.Scene {
     // フェードアウト完了後にシーン遷移
     this.cameras.main.once('camerafadeoutcomplete', () => {
       if (this.hasEvent) {
-        // イベントがある場合: RoomScene（夜中フェーズ）へ
-        console.log('[SleepingScene] イベントあり。RoomSceneへ遷移');
-        this.scene.start('RoomScene', {
-          hasEvent: true,
-          eventId: this.eventId,
-        });
+        // イベントがある場合: 夜泣きシナリオのフェーズ1へ
+        console.log('[SleepingScene] イベントあり。NightcryPhase1Sceneへ遷移');
+        this.scene.start('NightcryPhase1Scene');
       } else {
         // イベントがない場合: MorningPhaseSceneへ
         console.log('[SleepingScene] イベントなし。MorningPhaseSceneへ遷移');
