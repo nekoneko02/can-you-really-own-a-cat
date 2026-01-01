@@ -1,4 +1,18 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run dev:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh issue view:*)",
+      "Skill(sub-issue)",
+      "Bash(gh issue list:*)",
+      "Bash(git worktree add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
   "hooks": {
     "Notification": [
       {
