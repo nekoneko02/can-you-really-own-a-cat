@@ -1,0 +1,257 @@
+openapi: 3.0.3
+info:
+  title: 君はねこを飼えるか API
+  description: |
+    猫飼育シミュレーションゲーム「君はねこを飼えるか？」の分析用API。
+
+    ## 概要
+    - シナリオ開始時・完了時のアンケートデータを収集
+    - 定量目標（シナリオ完了率、行動変容率、ユーザー満足度）の計測に使用
+  version: 1.0.0
+  contact:
+    name: Project Team
+
+servers:
+  - url: /api
+    description: API Base Path
+
+paths:
+  /scenarios/{scenarioSlug}/start:
+    post:
+      summary: シナリオ開始を記録
+      description: |
+        シナリオ開始時に呼び出し、開始時アンケートを保存する。
+        タイムスタンプ（startedAt）はAPI側で付与。
+      operationId: startScenario
+      tags:
+        - Scenarios
+      parameters:
+        - $ref: '#/components/parameters/scenarioSlug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartRequest'
+            example:
+              sessionId: "abc123-def456"
+              preSurvey:
+                wantToCatLevel: 3
+                expectations:
+                  - "飼育の大変さを知りたい"
+                  - "猫との生活をイメージしたい"
+      responses:
+        '201':
+          description: 記録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StartResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /scenarios/{scenarioSlug}/complete:
+    post:
+      summary: シナリオ完了を記録
+      description: |
+        シナリオ完了時に呼び出し、終了時アンケートを保存する。
+        タイムスタンプ（completedAt）はAPI側で付与。
+      operationId: completeScenario
+      tags:
+        - Scenarios
+      parameters:
+        - $ref: '#/components/parameters/scenarioSlug'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteRequest'
+            example:
+              sessionId: "abc123-def456"
+              postSurvey:
+                wantToCatLevel: 4
+                awareness: "new"
+                freeText: "夜泣きがこんなに続くとは思わなかった"
+      responses:
+        '200':
+          description: 記録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: 対応する開始記録が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    scenarioSlug:
+      name: scenarioSlug
+      in: path
+      required: true
+      description: シナリオ識別子
+      schema:
+        type: string
+        enum:
+          - night-crying
+      example: night-crying
+
+  schemas:
+    # リクエスト
+    StartRequest:
+      type: object
+      required:
+        - sessionId
+        - preSurvey
+      properties:
+        sessionId:
+          type: string
+          description: iron-session で生成したセッションID
+          example: "abc123-def456"
+        preSurvey:
+          $ref: '#/components/schemas/PreSurvey'
+
+    CompleteRequest:
+      type: object
+      required:
+        - sessionId
+        - postSurvey
+      properties:
+        sessionId:
+          type: string
+          description: iron-session で生成したセッションID
+          example: "abc123-def456"
+        postSurvey:
+          $ref: '#/components/schemas/PostSurvey'
+
+    # アンケート
+    PreSurvey:
+      type: object
+      required:
+        - wantToCatLevel
+      properties:
+        wantToCatLevel:
+          $ref: '#/components/schemas/WantToCatLevel'
+        expectations:
+          type: array
+          description: 体験に期待すること（複数選択可、任意）
+          items:
+            type: string
+            enum:
+              - 飼育の大変さを知りたい
+              - 猫との生活をイメージしたい
+              - 飼う前に気づきを得たい
+              - その他
+          example:
+            - "飼育の大変さを知りたい"
+
+    PostSurvey:
+      type: object
+      required:
+        - wantToCatLevel
+        - awareness
+      properties:
+        wantToCatLevel:
+          $ref: '#/components/schemas/WantToCatLevel'
+        awareness:
+          type: string
+          description: 気づきの有無
+          enum:
+            - new
+            - realized
+            - none
+          x-enum-descriptions:
+            new: 新しい気づきがあった
+            realized: 知っていたが、実感できた
+            none: 特に気づきはなかった
+          example: "new"
+        freeText:
+          type: string
+          description: 自由記述（任意）
+          maxLength: 1000
+          example: "夜泣きがこんなに続くとは思わなかった"
+
+    WantToCatLevel:
+      type: integer
+      description: |
+        猫を飼いたい度合い
+        - 1: とても飼いたい
+        - 2: やや飼いたい
+        - 3: 迷っている
+        - 4: あまり飼いたくない
+        - 5: 飼うつもりはない
+      minimum: 1
+      maximum: 5
+      example: 3
+
+    # レスポンス
+    StartResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        startedAt:
+          type: string
+          format: date-time
+          description: 記録日時（API側で付与）
+          example: "2026-01-03T12:00:00Z"
+
+    CompleteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        completedAt:
+          type: string
+          format: date-time
+          description: 記録日時（API側で付与）
+          example: "2026-01-03T12:30:00Z"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: エラーメッセージ
+          example: "Invalid request"
+        code:
+          type: string
+          description: エラーコード
+          example: "INVALID_SESSION_ID"
+
+  responses:
+    BadRequest:
+      description: リクエストが不正
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Invalid request body"
+            code: "VALIDATION_ERROR"
+
+    InternalServerError:
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Internal server error"
+            code: "INTERNAL_ERROR"
+
+tags:
+  - name: Scenarios
+    description: シナリオ体験の分析データ収集
