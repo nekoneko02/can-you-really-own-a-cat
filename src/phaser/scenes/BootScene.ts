@@ -124,6 +124,10 @@ export class BootScene extends Phaser.Scene {
       const { NightcryPhase5Scene } = require('./nightcry/NightcryPhase5Scene');
       this.scene.add('NightcryPhase5Scene', NightcryPhase5Scene, false);
     }
+    if (!this.scene.manager.getScene('NightcryEndingScene')) {
+      const { NightcryEndingScene } = require('./nightcry/NightcryEndingScene');
+      this.scene.add('NightcryEndingScene', NightcryEndingScene, false);
+    }
 
     // NightPhaseSceneから開始（1日の始まり）
     this.scene.start('NightPhaseScene');

@@ -14,3 +14,8 @@ export { NightcryPhase2Scene } from './NightcryPhase2Scene';
 export { NightcryPhase3Scene } from './NightcryPhase3Scene';
 export { NightcryPhase4Scene } from './NightcryPhase4Scene';
 export { NightcryPhase5Scene } from './NightcryPhase5Scene';
+export { NightcryEndingScene } from './NightcryEndingScene';
+export type {
+  NightcryEndingSceneParams,
+  EndingContent,
+} from './NightcryEndingScene';
