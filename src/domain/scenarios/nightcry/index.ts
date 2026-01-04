@@ -32,3 +32,14 @@ export {
   type EngineStep,
   type EngineState,
 } from './NightcryScenarioEngine';
+
+export {
+  ReportGenerator,
+  type UserChoiceDisplay,
+  type ReportHeader,
+  type ReportStatistics,
+  type ReportExperienceSummary,
+  type ReportPerspectives,
+  type ReportClosing,
+  type ReportContent,
+} from './ReportGenerator';
