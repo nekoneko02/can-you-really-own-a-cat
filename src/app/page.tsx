@@ -12,7 +12,7 @@ export default function HomePage() {
   const router = useRouter();
 
   const handleStart = () => {
-    router.push('/intro');
+    router.push('/scenarios');
   };
 
   return (

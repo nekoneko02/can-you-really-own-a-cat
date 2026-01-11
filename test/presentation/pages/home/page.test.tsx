@@ -74,13 +74,13 @@ describe('HomePage', () => {
   });
 
   describe('CTA遷移', () => {
-    it('「はじめる」ボタンをクリックするとシナリオ説明画面へ遷移する', () => {
+    it('「はじめる」ボタンをクリックするとシナリオ選択画面へ遷移する', () => {
       render(<HomePage />);
 
       const startButton = screen.getByRole('button', { name: 'はじめる' });
       fireEvent.click(startButton);
 
-      expect(mockPush).toHaveBeenCalledWith('/intro');
+      expect(mockPush).toHaveBeenCalledWith('/scenarios');
     });
   });
 });
