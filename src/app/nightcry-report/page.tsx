@@ -189,6 +189,18 @@ export default function NightcryReportPage() {
                 {report.perspectives.individualDifference.note}
               </p>
             </div>
+            <div>
+              <h3 className="font-bold text-slate-200">
+                {report.perspectives.nightActivity.title}
+              </h3>
+              <ul className="list-disc list-inside space-y-1 text-slate-300">
+                {report.perspectives.nightActivity.points.map(
+                  (point, index) => (
+                    <li key={index}>{point}</li>
+                  )
+                )}
+              </ul>
+            </div>
           </div>
         </section>
 

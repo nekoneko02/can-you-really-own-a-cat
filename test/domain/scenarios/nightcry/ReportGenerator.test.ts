@@ -169,6 +169,26 @@ describe('ReportGenerator', () => {
       expect(content.perspectives.sleepQuality).toBeDefined();
       expect(content.perspectives.continuity).toBeDefined();
       expect(content.perspectives.individualDifference).toBeDefined();
+      expect(content.perspectives.nightActivity).toBeDefined();
+    });
+
+    it('夜の運動会についての補足説明を含む', () => {
+      const content = ReportGenerator.REPORT_CONTENT;
+
+      expect(content.perspectives.nightActivity.title).toBe('夜の運動会はねこ次第');
+      expect(content.perspectives.nightActivity.points).toHaveLength(4);
+      expect(content.perspectives.nightActivity.points).toContain(
+        '呼ぶように鳴く子もいます。寂しそうに鳴く子もいます。'
+      );
+      expect(content.perspectives.nightActivity.points).toContain(
+        '声の大きい子もいれば、声の小さめの子もいます。'
+      );
+      expect(content.perspectives.nightActivity.points).toContain(
+        '布団に乗ってきたり、顔を触ってきたりする子もいます。'
+      );
+      expect(content.perspectives.nightActivity.points).toContain(
+        '1人で走り回って、足音や物音が聞こえることもあります。'
+      );
     });
 
     it('締めの文言を含む', () => {

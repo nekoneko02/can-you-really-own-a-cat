@@ -61,6 +61,10 @@ export interface ReportPerspectives {
     points: string[];
     note: string;
   };
+  nightActivity: {
+    title: string;
+    points: string[];
+  };
 }
 
 /**
@@ -218,6 +222,15 @@ export class ReportGenerator {
           '「今は大丈夫」でも、5年後、10年後はわかりません',
         ],
         note: 'この体験より軽いことも、重いこともありえます。',
+      },
+      nightActivity: {
+        title: '夜の運動会はねこ次第',
+        points: [
+          '呼ぶように鳴く子もいます。寂しそうに鳴く子もいます。',
+          '声の大きい子もいれば、声の小さめの子もいます。',
+          '布団に乗ってきたり、顔を触ってきたりする子もいます。',
+          '1人で走り回って、足音や物音が聞こえることもあります。',
+        ],
       },
     },
     closing: {
