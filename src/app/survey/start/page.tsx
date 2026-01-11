@@ -24,6 +24,11 @@ const WANT_TO_CAT_OPTIONS: { value: WantToCatLevel; label: string }[] = [
 const EXPECTATION_OPTIONS: Expectation[] = [...ALLOWED_EXPECTATIONS];
 
 /**
+ * その他の期待の最大文字数
+ */
+const OTHER_EXPECTATION_MAX_LENGTH = 200;
+
+/**
  * 開始時アンケート画面
  *
  * 効果測定のベースライン取得用。
@@ -41,6 +46,7 @@ export default function StartSurveyPage() {
     null
   );
   const [expectations, setExpectations] = useState<Expectation[]>([]);
+  const [otherExpectation, setOtherExpectation] = useState('');
 
   // セッション取得（なければ自動作成）
   useEffect(() => {
@@ -80,10 +86,13 @@ export default function StartSurveyPage() {
     setError(null);
 
     try {
-      await surveyApiClient.startScenario('night-crying', sessionId, {
+      const preSurvey = {
         wantToCatLevel,
         expectations,
-      });
+        ...(otherExpectation.trim() && { otherExpectation: otherExpectation.trim() }),
+      };
+
+      await surveyApiClient.startScenario('night-crying', sessionId, preSurvey);
 
       router.push('/experience');
     } catch (err) {
@@ -94,7 +103,7 @@ export default function StartSurveyPage() {
       }
       setIsSubmitting(false);
     }
-  }, [sessionId, wantToCatLevel, expectations, router]);
+  }, [sessionId, wantToCatLevel, expectations, otherExpectation, router]);
 
   // ボタンの有効/無効
   const isButtonDisabled =
@@ -219,6 +228,24 @@ export default function StartSurveyPage() {
                 {option}
               </label>
             ))}
+          </div>
+
+          {/* その他の期待（自由テキスト） */}
+          <div className="mt-6">
+            <h3 className="text-base font-medium text-white mb-2">
+              その他のご期待があればお書きください（任意）
+            </h3>
+            <textarea
+              value={otherExpectation}
+              onChange={(e) => setOtherExpectation(e.target.value)}
+              maxLength={OTHER_EXPECTATION_MAX_LENGTH}
+              rows={3}
+              placeholder="自由にお書きください..."
+              className="w-full p-4 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+            />
+            <div className="text-right text-gray-500 text-sm mt-1">
+              {otherExpectation.length} / {OTHER_EXPECTATION_MAX_LENGTH}
+            </div>
           </div>
         </section>
 

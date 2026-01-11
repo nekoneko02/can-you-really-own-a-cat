@@ -50,6 +50,16 @@ export function isValidExpectations(expectations: unknown): boolean {
 }
 
 /**
+ * その他の期待（otherExpectation）のバリデーション
+ * 最大200文字
+ */
+export function isValidOtherExpectation(text: unknown): boolean {
+  if (text === undefined) return true;
+  if (typeof text !== 'string') return false;
+  return text.length <= 200;
+}
+
+/**
  * 自由記述テキストのバリデーション
  */
 export function isValidFreeText(text: unknown): boolean {
@@ -89,6 +99,11 @@ export function validateStartRequest(body: unknown): ErrorResponse | null {
   // expectationsのバリデーション
   if (!isValidExpectations(preSurvey.expectations)) {
     return { error: 'Invalid expectations', code: ERROR_CODES.VALIDATION_ERROR };
+  }
+
+  // otherExpectationのバリデーション
+  if (!isValidOtherExpectation(preSurvey.otherExpectation)) {
+    return { error: 'otherExpectation exceeds 200 characters', code: ERROR_CODES.VALIDATION_ERROR };
   }
 
   return null;

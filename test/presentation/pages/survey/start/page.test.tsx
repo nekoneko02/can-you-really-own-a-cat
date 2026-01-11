@@ -101,6 +101,40 @@ describe('StartSurveyPage', () => {
         expect(screen.getByRole('button', { name: '次へ' })).toBeInTheDocument();
       });
     });
+
+    it('自由テキスト入力欄が表示される', async () => {
+      render(<StartSurveyPage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('その他のご期待があればお書きください（任意）')
+        ).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText('自由にお書きください...')
+        ).toBeInTheDocument();
+      });
+    });
+
+    it('自由テキスト入力欄の文字数カウンターが表示される', async () => {
+      render(<StartSurveyPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('0 / 200')).toBeInTheDocument();
+      });
+    });
+
+    it('自由テキスト入力時に文字数カウンターが更新される', async () => {
+      render(<StartSurveyPage />);
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText('自由にお書きください...')).toBeInTheDocument();
+      });
+
+      const textarea = screen.getByPlaceholderText('自由にお書きください...');
+      fireEvent.change(textarea, { target: { value: 'テスト入力' } });
+
+      expect(screen.getByText('5 / 200')).toBeInTheDocument();
+    });
   });
 
   describe('バリデーション', () => {
@@ -174,6 +208,34 @@ describe('StartSurveyPage', () => {
               '飼育の大変さを知りたい',
               '猫との生活をイメージしたい',
             ],
+          }
+        );
+      });
+    });
+
+    it('otherExpectationがAPIリクエストに含まれる', async () => {
+      render(<StartSurveyPage />);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('迷っている')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByLabelText('迷っている'));
+
+      // 自由テキスト入力欄に入力
+      const textarea = screen.getByPlaceholderText('自由にお書きください...');
+      fireEvent.change(textarea, { target: { value: '猫アレルギーの確認方法を知りたい' } });
+
+      fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+
+      await waitFor(() => {
+        expect(surveyApiClient.startScenario).toHaveBeenCalledWith(
+          'night-crying',
+          '12345678-1234-4123-8123-123456789abc',
+          {
+            wantToCatLevel: 3,
+            expectations: [],
+            otherExpectation: '猫アレルギーの確認方法を知りたい',
           }
         );
       });

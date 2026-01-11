@@ -42,6 +42,7 @@ export type Awareness = (typeof ALLOWED_AWARENESS)[number];
 export interface PreSurvey {
   wantToCatLevel: WantToCatLevel;
   expectations?: Expectation[];
+  otherExpectation?: string;
 }
 
 /**

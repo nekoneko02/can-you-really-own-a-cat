@@ -7,6 +7,7 @@ import {
   isValidWantToCatLevel,
   isValidAwareness,
   isValidExpectations,
+  isValidOtherExpectation,
   isValidFreeText,
   validateStartRequest,
   validateCompleteRequest,
@@ -77,6 +78,27 @@ describe('API Validation', () => {
     it('should return false for invalid expectations', () => {
       expect(isValidExpectations(['invalid expectation'])).toBe(false);
       expect(isValidExpectations(['飼育の大変さを知りたい', 'invalid'])).toBe(false);
+    });
+  });
+
+  describe('isValidOtherExpectation', () => {
+    it('should return true for valid text', () => {
+      expect(isValidOtherExpectation('猫アレルギーがあるかもしれない')).toBe(true);
+      expect(isValidOtherExpectation('')).toBe(true);
+    });
+
+    it('should return true for undefined', () => {
+      expect(isValidOtherExpectation(undefined)).toBe(true);
+    });
+
+    it('should return false for text exceeding 200 characters', () => {
+      const longText = 'a'.repeat(201);
+      expect(isValidOtherExpectation(longText)).toBe(false);
+    });
+
+    it('should return true for exactly 200 characters', () => {
+      const maxText = 'a'.repeat(200);
+      expect(isValidOtherExpectation(maxText)).toBe(true);
     });
   });
 
@@ -165,6 +187,32 @@ describe('API Validation', () => {
         preSurvey: {
           wantToCatLevel: 3,
           expectations: ['invalid'],
+        },
+      };
+      const error = validateStartRequest(request);
+      expect(error).not.toBeNull();
+      expect(error?.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('should return null for valid request with otherExpectation', () => {
+      const request = {
+        sessionId: validSessionId,
+        preSurvey: {
+          wantToCatLevel: 3,
+          expectations: ['その他'],
+          otherExpectation: '猫アレルギーがあるかもしれない',
+        },
+      };
+      expect(validateStartRequest(request)).toBeNull();
+    });
+
+    it('should return error for otherExpectation exceeding 200 characters', () => {
+      const request = {
+        sessionId: validSessionId,
+        preSurvey: {
+          wantToCatLevel: 3,
+          expectations: ['その他'],
+          otherExpectation: 'a'.repeat(201),
         },
       };
       const error = validateStartRequest(request);
