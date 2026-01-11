@@ -12,7 +12,7 @@ export default function IntroPage() {
   const router = useRouter();
 
   const handleStart = () => {
-    router.push('/nightcry/survey/start');
+    router.push('/survey/start');
   };
 
   return (

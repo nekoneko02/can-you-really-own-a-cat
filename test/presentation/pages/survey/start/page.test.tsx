@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import StartSurveyPage from '@/app/nightcry/survey/start/page';
+import StartSurveyPage from '@/app/survey/start/page';
 
 // APIクライアントをモック
 jest.mock('@/lib/api/client', () => ({
@@ -24,6 +24,10 @@ jest.mock('next/navigation', () => ({
 // セッションActionsをモック
 jest.mock('@/lib/session/actions', () => ({
   getSession: jest.fn().mockResolvedValue({
+    sessionId: '12345678-1234-4123-8123-123456789abc',
+    scenarioSlug: 'night-crying',
+  }),
+  createSession: jest.fn().mockResolvedValue({
     sessionId: '12345678-1234-4123-8123-123456789abc',
     scenarioSlug: 'night-crying',
   }),
@@ -186,7 +190,7 @@ describe('StartSurveyPage', () => {
       fireEvent.click(screen.getByRole('button', { name: '次へ' }));
 
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/nightcry/experience');
+        expect(mockPush).toHaveBeenCalledWith('/experience');
       });
     });
   });

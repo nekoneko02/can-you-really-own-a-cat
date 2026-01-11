@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import IntroPage from '@/app/nightcry/intro/page';
+import IntroPage from '@/app/intro/page';
 
 // useRouterをモック
 const mockPush = jest.fn();
@@ -84,7 +84,7 @@ describe('IntroPage', () => {
       const startButton = screen.getByRole('button', { name: '体験をはじめる' });
       fireEvent.click(startButton);
 
-      expect(mockPush).toHaveBeenCalledWith('/nightcry/survey/start');
+      expect(mockPush).toHaveBeenCalledWith('/survey/start');
     });
   });
 });

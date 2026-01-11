@@ -1,44 +1,67 @@
-import Link from "next/link";
+'use client';
 
-export default function Home() {
+import { useRouter } from 'next/navigation';
+
+/**
+ * ホーム画面
+ *
+ * プロダクトのコンセプトを伝え、ターゲットユーザーが「自分に必要だ」と感じられるようにする。
+ * シナリオ体験への導線を提供する。
+ */
+export default function HomePage() {
+  const router = useRouter();
+
+  const handleStart = () => {
+    router.push('/intro');
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-blue-50 to-white">
-      <main className="max-w-2xl px-8 py-16 text-center">
-        <h1 className="text-5xl font-bold text-gray-800 mb-4">
-          君はねこを飼えるか？
-        </h1>
-        <p className="text-xl text-gray-600 mb-2">
-          プロトタイプ版
-        </p>
-        <p className="text-sm text-gray-500 mb-8">
-          飼う前に、猫を知ろう
-        </p>
+    <div className="min-h-screen bg-gradient-to-b from-slate-800 via-slate-700 to-slate-800 flex items-center justify-center px-4 py-8">
+      <main className="max-w-lg w-full">
+        {/* タイトルエリア */}
+        <header className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            君はねこを飼えるか？
+          </h1>
+          <div className="w-24 h-0.5 bg-amber-400 mx-auto mb-3" />
+          <p className="text-lg text-amber-200">飼う前に、猫を知ろう</p>
+        </header>
 
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            このゲームについて
-          </h2>
-          <p className="text-gray-600 leading-relaxed mb-6">
-            このゲームは「ねこを飼うか迷っている人」に向けた、判断材料を提供するシミュレーションです。<br />
-            責任感を押し付けるのではなく、「気づき」を与えることを目的としています。<br />
-            <br />
-            <strong>プロトタイプ版では、3つの基本的なイベントを体験できます。</strong>
-          </p>
-
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-700">
-              📊 令和5年度の猫の殺処分数: <strong>6,899頭</strong><br />
-              「やっぱり飼わない」という選択も、成功です。
-            </p>
-          </div>
+        {/* 猫のイラスト */}
+        <div className="flex justify-center mb-8">
+          <img
+            src="/assets/characters/cat/sitting_1.png"
+            alt="猫のイラスト"
+            className="w-48 h-48 object-contain opacity-90"
+          />
         </div>
 
-        <Link
-          href="/onboarding"
-          className="inline-block bg-blue-500 text-white text-lg font-bold px-8 py-4 rounded-lg hover:bg-blue-600 transition-colors shadow-lg"
-        >
-          ゲームを始める
-        </Link>
+        {/* コンセプトエリア */}
+        <div className="bg-slate-900/50 backdrop-blur-sm rounded-xl p-6 mb-6">
+          <p className="text-lg text-white font-medium mb-4 text-center">
+            猫を飼うか迷っていますか？
+          </p>
+          <p className="text-gray-300 leading-relaxed text-center">
+            夜中の鳴き声、突然の病院代、毎日のお世話——
+            <br />
+            飼ってから気づく日常を、ここで体験してみてください。
+          </p>
+        </div>
+
+        {/* 強調メッセージ */}
+        <p className="text-center text-amber-300 font-bold text-lg mb-8">
+          飼った後に後悔しないために。
+        </p>
+
+        {/* CTAボタン */}
+        <div className="text-center">
+          <button
+            onClick={handleStart}
+            className="inline-block bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-lg px-10 py-4 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+          >
+            はじめる
+          </button>
+        </div>
       </main>
     </div>
   );

@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import EndSurveyPage from '@/app/nightcry/survey/end/page';
+import EndSurveyPage from '@/app/survey/end/page';
 
 // APIクライアントをモック
 jest.mock('@/lib/api/client', () => ({

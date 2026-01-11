@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { surveyApiClient } from '@/lib/api/client';
-import { getSession } from '@/lib/session/actions';
+import { getSession, createSession } from '@/lib/session/actions';
 import type { WantToCatLevel, Expectation } from '@/lib/api/types';
 import { ALLOWED_EXPECTATIONS } from '@/lib/api/types';
 
@@ -42,16 +42,16 @@ export default function StartSurveyPage() {
   );
   const [expectations, setExpectations] = useState<Expectation[]>([]);
 
-  // セッション取得
+  // セッション取得（なければ自動作成）
   useEffect(() => {
-    async function loadSession() {
+    async function loadOrCreateSession() {
       try {
-        const session = await getSession();
-        if (session?.sessionId) {
-          setSessionId(session.sessionId);
-        } else {
-          setError('セッションが見つかりません。最初からやり直してください。');
+        let session = await getSession();
+        if (!session?.sessionId) {
+          // セッションがなければ自動作成
+          session = await createSession('night-crying');
         }
+        setSessionId(session.sessionId);
       } catch {
         setError('セッションの取得に失敗しました。');
       } finally {
@@ -59,7 +59,7 @@ export default function StartSurveyPage() {
       }
     }
 
-    loadSession();
+    loadOrCreateSession();
   }, []);
 
   // 期待値のトグル
@@ -85,7 +85,7 @@ export default function StartSurveyPage() {
         expectations,
       });
 
-      router.push('/nightcry/experience');
+      router.push('/experience');
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);

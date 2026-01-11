@@ -1,10 +1,10 @@
 /**
- * 夜泣きシナリオ ホーム画面のテスト
+ * ホーム画面のテスト
  */
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import NightcryHomePage from '@/app/nightcry/page';
+import HomePage from '@/app/page';
 
 // useRouterをモック
 const mockPush = jest.fn();
@@ -14,14 +14,14 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-describe('NightcryHomePage', () => {
+describe('HomePage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('表示', () => {
     it('タイトルが表示される', () => {
-      render(<NightcryHomePage />);
+      render(<HomePage />);
 
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
         '君はねこを飼えるか？'
@@ -29,13 +29,13 @@ describe('NightcryHomePage', () => {
     });
 
     it('タグラインが表示される', () => {
-      render(<NightcryHomePage />);
+      render(<HomePage />);
 
       expect(screen.getByText('飼う前に、猫を知ろう')).toBeInTheDocument();
     });
 
     it('コンセプトテキストが表示される', () => {
-      render(<NightcryHomePage />);
+      render(<HomePage />);
 
       expect(
         screen.getByText('猫を飼うか迷っていますか？')
@@ -49,7 +49,7 @@ describe('NightcryHomePage', () => {
     });
 
     it('強調メッセージが表示される', () => {
-      render(<NightcryHomePage />);
+      render(<HomePage />);
 
       expect(
         screen.getByText('飼った後に後悔しないために。')
@@ -57,7 +57,7 @@ describe('NightcryHomePage', () => {
     });
 
     it('CTAボタンが表示される', () => {
-      render(<NightcryHomePage />);
+      render(<HomePage />);
 
       expect(
         screen.getByRole('button', { name: 'はじめる' })
@@ -65,7 +65,7 @@ describe('NightcryHomePage', () => {
     });
 
     it('猫のイラスト領域が表示される', () => {
-      render(<NightcryHomePage />);
+      render(<HomePage />);
 
       // 猫のイラスト用のimg要素またはプレースホルダーが存在することを確認
       const catImage = screen.getByRole('img', { name: /猫/ });
@@ -75,12 +75,12 @@ describe('NightcryHomePage', () => {
 
   describe('CTA遷移', () => {
     it('「はじめる」ボタンをクリックするとシナリオ説明画面へ遷移する', () => {
-      render(<NightcryHomePage />);
+      render(<HomePage />);
 
       const startButton = screen.getByRole('button', { name: 'はじめる' });
       fireEvent.click(startButton);
 
-      expect(mockPush).toHaveBeenCalledWith('/nightcry/intro');
+      expect(mockPush).toHaveBeenCalledWith('/intro');
     });
   });
 });

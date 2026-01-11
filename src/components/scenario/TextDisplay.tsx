@@ -7,6 +7,7 @@ export interface TextDisplayProps {
   onComplete: () => void;
   onNext: () => void;
   speed?: number; // ms per character
+  disableInteraction?: boolean; // 選択肢表示中など、操作を無効化したい場合
 }
 
 export function TextDisplay({
@@ -14,6 +15,7 @@ export function TextDisplay({
   onComplete,
   onNext,
   speed = 50,
+  disableInteraction = false,
 }: TextDisplayProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [isComplete, setIsComplete] = useState(false);
@@ -43,6 +45,8 @@ export function TextDisplay({
 
   // スキップまたは次へ
   const handleInteraction = useCallback(() => {
+    if (disableInteraction) return;
+
     if (isComplete) {
       onNext();
     } else {
@@ -51,7 +55,7 @@ export function TextDisplay({
       setIsComplete(true);
       onComplete();
     }
-  }, [isComplete, text, onNext, onComplete]);
+  }, [isComplete, text, onNext, onComplete, disableInteraction]);
 
   // キーボードイベント
   useEffect(() => {
@@ -68,7 +72,7 @@ export function TextDisplay({
   return (
     <div
       data-testid="text-display"
-      className="text-display p-6 text-lg leading-relaxed text-gray-800 cursor-pointer min-h-[100px]"
+      className="text-display p-6 text-lg leading-relaxed text-white cursor-pointer min-h-[100px]"
       onClick={handleInteraction}
     >
       {displayedText}

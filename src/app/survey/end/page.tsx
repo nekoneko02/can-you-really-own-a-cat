@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { surveyApiClient } from '@/lib/api/client';
 import { getSession } from '@/lib/session/actions';
 import type { WantToCatLevel, Awareness } from '@/lib/api/types';
-import { ALLOWED_AWARENESS } from '@/lib/api/types';
 
 /**
  * 猫を飼いたい度合いの選択肢

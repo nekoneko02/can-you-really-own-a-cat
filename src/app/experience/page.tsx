@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SceneBackground } from '@/components/scenario/SceneBackground';
 import { TextDisplay } from '@/components/scenario/TextDisplay';
@@ -17,7 +17,7 @@ import { MeowPlayer } from '@/lib/audio/MeowPlayer';
  *
  * ノベルゲーム形式で夜泣きの疑似体験を提供します。
  */
-export default function NightcryExperiencePage() {
+export default function ExperiencePage() {
   const router = useRouter();
   const [engineState, setEngineState] = useState<EngineState>(() =>
     NightcryScenarioEngine.createInitialState()
@@ -150,6 +150,7 @@ export default function NightcryExperiencePage() {
                 onComplete={handleTextComplete}
                 onNext={handleNext}
                 speed={50}
+                disableInteraction={showChoices}
               />
             </div>
 
