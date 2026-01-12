@@ -7,16 +7,10 @@ export type {
   PhaseSelection,
   PhaseSelections,
   NightcryScenarioState,
-  SelectionTendency,
   NightcryReportData,
 } from './NightcryScenarioState';
 
 export { NightcryScenarioManager } from './NightcryScenarioManager';
-
-export {
-  SelectionTendencyAnalyzer,
-  type SelectionCounts,
-} from './SelectionTendencyAnalyzer';
 
 export {
   NightcryScenarioContent,

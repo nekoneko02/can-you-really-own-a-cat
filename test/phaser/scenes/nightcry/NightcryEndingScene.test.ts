@@ -43,18 +43,10 @@ jest.mock('@/phaser/ui/UIConstants', () => ({
   },
 }));
 
-// SelectionTendencyAnalyzerをモック
-jest.mock('@/domain/scenarios/nightcry/SelectionTendencyAnalyzer', () => ({
-  SelectionTendencyAnalyzer: {
-    analyze: jest.fn().mockReturnValue('mixed'),
-  },
-}));
-
 import type {
   NightcryScenarioState,
   NightcryReportData,
 } from '@/domain/scenarios/nightcry/NightcryScenarioState';
-import { SelectionTendencyAnalyzer } from '@/domain/scenarios/nightcry/SelectionTendencyAnalyzer';
 
 // テスト対象のシーン用型定義
 interface NightcryEndingSceneInterface {
@@ -161,9 +153,7 @@ describe('NightcryEndingScene', () => {
       );
     });
 
-    it('保存データにselectionsとtendencyが含まれる', async () => {
-      (SelectionTendencyAnalyzer.analyze as jest.Mock).mockReturnValue('resilient');
-
+    it('保存データにselectionsが含まれる', async () => {
       const { NightcryEndingScene } = await import(
         '@/phaser/scenes/nightcry/NightcryEndingScene'
       );
@@ -177,21 +167,6 @@ describe('NightcryEndingScene', () => {
       ) as NightcryReportData;
 
       expect(savedData.selections).toEqual(mockScenarioState.selections);
-      expect(savedData.tendency).toBe('resilient');
-    });
-
-    it('SelectionTendencyAnalyzerが選択データで呼ばれる', async () => {
-      const { NightcryEndingScene } = await import(
-        '@/phaser/scenes/nightcry/NightcryEndingScene'
-      );
-      const scene = new NightcryEndingScene() as unknown as NightcryEndingSceneInterface;
-      scene.init({ scenarioState: mockScenarioState });
-
-      scene.saveReportData();
-
-      expect(SelectionTendencyAnalyzer.analyze).toHaveBeenCalledWith(
-        mockScenarioState.selections
-      );
     });
   });
 
