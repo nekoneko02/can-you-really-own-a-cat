@@ -24,11 +24,7 @@ export interface NightcryScenarioState {
   completed: boolean;
 }
 
-/** 選択傾向 */
-export type SelectionTendency = 'resilient' | 'aware' | 'struggling' | 'mixed';
-
 /** レポート用データ */
 export interface NightcryReportData {
   selections: PhaseSelections;
-  tendency: SelectionTendency;
 }

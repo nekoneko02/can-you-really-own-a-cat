@@ -13,7 +13,6 @@ import type {
   NightcryScenarioState,
   NightcryReportData,
 } from '@/domain/scenarios/nightcry/NightcryScenarioState';
-import { SelectionTendencyAnalyzer } from '@/domain/scenarios/nightcry/SelectionTendencyAnalyzer';
 
 /**
  * シーン起動パラメータ
@@ -193,13 +192,8 @@ export class NightcryEndingScene extends Phaser.Scene {
       return;
     }
 
-    const tendency = SelectionTendencyAnalyzer.analyze(
-      this.scenarioState.selections
-    );
-
     const reportData: NightcryReportData = {
       selections: this.scenarioState.selections,
-      tendency: tendency,
     };
 
     localStorage.setItem('nightcryReportData', JSON.stringify(reportData));

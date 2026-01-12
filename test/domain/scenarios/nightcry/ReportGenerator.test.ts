@@ -10,7 +10,6 @@ import {
 } from '@/domain/scenarios/nightcry/ReportGenerator';
 import type {
   PhaseSelections,
-  SelectionTendency,
   NightcryReportData,
 } from '@/domain/scenarios/nightcry/NightcryScenarioState';
 
@@ -26,7 +25,6 @@ describe('ReportGenerator', () => {
       };
       const reportData: NightcryReportData = {
         selections,
-        tendency: 'mixed',
       };
 
       const report = ReportGenerator.generateReport(reportData);
@@ -36,6 +34,7 @@ describe('ReportGenerator', () => {
       expect(report.statistics).toBeDefined();
       expect(report.experienceSummary).toBeDefined();
       expect(report.userChoices).toBeDefined();
+      expect(report.commonMessage).toBeDefined();
       expect(report.perspectives).toBeDefined();
       expect(report.closing).toBeDefined();
     });
@@ -49,12 +48,28 @@ describe('ReportGenerator', () => {
           phase4: 'A',
           phase5: 'A',
         },
-        tendency: 'resilient',
       };
 
       const report = ReportGenerator.generateReport(reportData);
 
       expect(report.header.mainQuestion).toContain('この生活が続くとしたら');
+    });
+
+    it('共通メッセージが正しく設定される', () => {
+      const reportData: NightcryReportData = {
+        selections: {
+          phase1: 'A',
+          phase2: 'B',
+          phase3: 'C',
+          phase4: 'A',
+          phase5: 'B',
+        },
+      };
+
+      const report = ReportGenerator.generateReport(reportData);
+
+      expect(report.commonMessage).toContain('睡眠への影響は人によって異なります');
+      expect(report.commonMessage).toContain('もし夜泣きが続いたとき、あなたはどうなりそうですか？');
     });
   });
 
@@ -91,32 +106,6 @@ describe('ReportGenerator', () => {
       formatted.forEach((item) => {
         expect(item.choiceText).toBe('未選択');
       });
-    });
-  });
-
-  describe('getTendencyDescription', () => {
-    it('resilient傾向の説明を返す', () => {
-      const description = ReportGenerator.getTendencyDescription('resilient');
-
-      expect(description).toContain('比較的うまく適応');
-    });
-
-    it('struggling傾向の説明を返す', () => {
-      const description = ReportGenerator.getTendencyDescription('struggling');
-
-      expect(description).toContain('影響を強く感じている');
-    });
-
-    it('aware傾向の説明を返す', () => {
-      const description = ReportGenerator.getTendencyDescription('aware');
-
-      expect(description).toContain('気づいている');
-    });
-
-    it('mixed傾向の説明を返す', () => {
-      const description = ReportGenerator.getTendencyDescription('mixed');
-
-      expect(description).toContain('一貫した傾向は見られませんでした');
     });
   });
 

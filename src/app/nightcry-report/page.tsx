@@ -142,8 +142,8 @@ export default function NightcryReportPage() {
               </div>
             ))}
           </div>
-          <p className="text-slate-300 leading-relaxed bg-slate-800 rounded-lg p-4 mt-4">
-            {report.tendency.description}
+          <p className="text-slate-300 leading-relaxed bg-slate-800 rounded-lg p-4 mt-4 whitespace-pre-line">
+            {report.commonMessage}
           </p>
         </section>
 

@@ -7,7 +7,6 @@
 
 import type {
   PhaseSelections,
-  SelectionTendency,
   NightcryReportData,
 } from './NightcryScenarioState';
 
@@ -85,10 +84,7 @@ export interface ReportContent {
   statistics: ReportStatistics;
   experienceSummary: ReportExperienceSummary;
   userChoices: UserChoiceDisplay[];
-  tendency: {
-    label: string;
-    description: string;
-  };
+  commonMessage: string;
   perspectives: ReportPerspectives;
   closing: ReportClosing;
 }
@@ -150,18 +146,10 @@ const PHASE_CHOICES: Record<
 };
 
 /**
- * 傾向に応じたテキスト
+ * 共通メッセージ
  */
-const TENDENCY_DESCRIPTIONS: Record<SelectionTendency, string> = {
-  resilient:
-    '夜中に完全に起きてしまう人もいます。すぐにまた眠れる人もいます。体調に影響が出やすい人もいます。あなたは比較的うまく適応できている傾向があるようです。ただ、これが長期間続いたときにどうなるかは、注意が必要かもしれません。',
-  aware:
-    '夜中に完全に起きてしまう人もいます。すぐにまた眠れる人もいます。体調に影響が出やすい人もいます。あなたは変化には気づいているものの、判断を保留している傾向があるようです。慎重に考えているとも言えますし、まだ決められないとも言えます。',
-  struggling:
-    '夜中に完全に起きてしまう人もいます。すぐにまた眠れる人もいます。体調に影響が出やすい人もいます。あなたは睡眠不足の影響を強く感じている傾向があるようです。もし実際にこうした生活が続いたとき、自分がどうなるかを想像してみてください。',
-  mixed:
-    '夜中に完全に起きてしまう人もいます。すぐにまた眠れる人もいます。体調に影響が出やすい人もいます。選択に一貫した傾向は見られませんでした。状況によって感じ方が変わるのは自然なことです。',
-};
+const COMMON_MESSAGE =
+  '睡眠への影響は人によって異なります。一度起きても平気な人もいれば、翌日に響く人もいます。\n\nもし夜泣きが続いたとき、あなたはどうなりそうですか？';
 
 /**
  * レポート生成クラス
@@ -251,19 +239,13 @@ export class ReportGenerator {
    */
   static generateReport(reportData: NightcryReportData): ReportContent {
     const userChoices = this.formatUserChoices(reportData.selections);
-    const tendencyDescription = this.getTendencyDescription(
-      reportData.tendency
-    );
 
     return {
       header: this.REPORT_CONTENT.header,
       statistics: this.REPORT_CONTENT.statistics,
       experienceSummary: this.REPORT_CONTENT.experienceSummary,
       userChoices,
-      tendency: {
-        label: this.getTendencyLabel(reportData.tendency),
-        description: tendencyDescription,
-      },
+      commonMessage: COMMON_MESSAGE,
       perspectives: this.REPORT_CONTENT.perspectives,
       closing: this.REPORT_CONTENT.closing,
     };
@@ -295,30 +277,6 @@ export class ReportGenerator {
         choiceText,
       };
     });
-  }
-
-  /**
-   * 傾向の説明を取得
-   * @param tendency 傾向
-   * @returns 説明テキスト
-   */
-  static getTendencyDescription(tendency: SelectionTendency): string {
-    return TENDENCY_DESCRIPTIONS[tendency];
-  }
-
-  /**
-   * 傾向のラベルを取得
-   * @param tendency 傾向
-   * @returns ラベル
-   */
-  static getTendencyLabel(tendency: SelectionTendency): string {
-    const labels: Record<SelectionTendency, string> = {
-      resilient: '適応傾向',
-      aware: '認識傾向',
-      struggling: '困難傾向',
-      mixed: '混合',
-    };
-    return labels[tendency];
   }
 
   /**

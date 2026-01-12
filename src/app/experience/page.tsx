@@ -7,7 +7,6 @@ import { TextDisplay } from '@/components/scenario/TextDisplay';
 import { ChoicePanel } from '@/components/scenario/ChoicePanel';
 import {
   NightcryScenarioEngine,
-  SelectionTendencyAnalyzer,
   type EngineState,
 } from '@/domain/scenarios/nightcry';
 import { MeowPlayer } from '@/lib/audio/MeowPlayer';
@@ -54,12 +53,8 @@ export default function ExperiencePage() {
   useEffect(() => {
     if (NightcryScenarioEngine.isCompleted(engineState)) {
       // レポートデータを保存
-      const tendency = SelectionTendencyAnalyzer.analyze(
-        engineState.selections
-      );
       const reportData = {
         selections: engineState.selections,
-        tendency,
       };
       localStorage.setItem('nightcryReportData', JSON.stringify(reportData));
 
