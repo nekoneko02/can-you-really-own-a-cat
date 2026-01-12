@@ -7,6 +7,7 @@
       "Bash(gh auth:*)",
       "Bash(gh issue view:*)",
       "Skill(sub-issue)",
+      "Skill(develop-issue)",
       "Bash(gh issue list:*)",
       "Bash(git worktree add:*)"
     ],
