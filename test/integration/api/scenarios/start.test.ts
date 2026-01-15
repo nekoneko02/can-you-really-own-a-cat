@@ -3,12 +3,17 @@
  */
 
 import { POST } from '@/app/api/scenarios/[scenarioSlug]/start/route';
-import { resetSurveyStorage } from '@/lib/api/surveyStorage';
+import { resetSurveyStorage, setSurveyStorage } from '@/lib/api/surveyStorage';
+import { InMemorySurveyStorage } from '@/test/helpers/InMemorySurveyStorage';
 import { NextRequest } from 'next/server';
 
 describe('POST /api/scenarios/[scenarioSlug]/start', () => {
+  let inMemoryStorage: InMemorySurveyStorage;
+
   beforeEach(() => {
     resetSurveyStorage();
+    inMemoryStorage = new InMemorySurveyStorage();
+    setSurveyStorage(inMemoryStorage);
   });
 
   const createRequest = (body: object) => {

@@ -50,8 +50,8 @@ export async function POST(
     const { sessionId, preSurvey } = body as StartRequest;
 
     // アンケートデータを保存
-    const storage = getSurveyStorage();
-    const record = storage.saveStartSurvey(sessionId, scenarioSlug, preSurvey);
+    const storage = await getSurveyStorage();
+    const record = await storage.saveStartSurvey(sessionId, scenarioSlug, preSurvey);
 
     // レスポンス
     const response: StartResponse = {

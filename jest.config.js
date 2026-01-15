@@ -13,6 +13,7 @@ const customJestConfig = {
       testEnvironment: 'jest-environment-jsdom',
       setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       moduleNameMapper: {
+        '^@/test/(.*)$': '<rootDir>/test/$1',
         '^@/(.*)$': '<rootDir>/src/$1',
       },
       testMatch: [
@@ -42,6 +43,7 @@ const customJestConfig = {
       testEnvironment: '@edge-runtime/jest-environment',
       setupFilesAfterEnv: ['<rootDir>/test/integration/setup.js'],
       moduleNameMapper: {
+        '^@/test/(.*)$': '<rootDir>/test/$1',
         '^@/(.*)$': '<rootDir>/src/$1',
       },
       testMatch: ['<rootDir>/test/integration/**/*.test.[jt]s?(x)'],

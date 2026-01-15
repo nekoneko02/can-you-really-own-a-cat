@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@aws-amplify/adapter-nextjs": "^1.6.12",
     "aws-amplify": "^6.15.9",
     "iron-session": "^8.0.4",
     "next": "^16.0.7",
