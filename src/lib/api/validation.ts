@@ -110,6 +110,25 @@ export function validateStartRequest(body: unknown): ErrorResponse | null {
 }
 
 /**
+ * シナリオ体験完了リクエストのバリデーション
+ * @returns エラーがある場合はErrorResponse、有効な場合はnull
+ */
+export function validateScenarioCompleteRequest(body: unknown): ErrorResponse | null {
+  if (!body || typeof body !== 'object') {
+    return { error: 'Invalid request body', code: ERROR_CODES.VALIDATION_ERROR };
+  }
+
+  const request = body as Record<string, unknown>;
+
+  // sessionIdのバリデーション
+  if (!isValidSessionId(request.sessionId as string | undefined)) {
+    return { error: 'Invalid or missing sessionId', code: ERROR_CODES.INVALID_SESSION_ID };
+  }
+
+  return null;
+}
+
+/**
  * 完了リクエストのバリデーション
  * @returns エラーがある場合はErrorResponse、有効な場合はnull
  */

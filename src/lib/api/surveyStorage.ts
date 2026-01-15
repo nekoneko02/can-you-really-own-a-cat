@@ -14,6 +14,7 @@ export interface SurveyRecord {
   preSurvey: PreSurvey;
   postSurvey?: PostSurvey;
   startedAt: string;
+  scenarioCompletedAt?: string;
   completedAt?: string;
 }
 
@@ -29,6 +30,12 @@ export interface ISurveyStorage {
     scenarioSlug: string,
     preSurvey: PreSurvey
   ): Promise<SurveyRecord>;
+
+  /**
+   * シナリオ完了を記録
+   * @returns 更新されたレコード、開始記録がない場合はnull
+   */
+  saveScenarioComplete(sessionId: string): Promise<SurveyRecord | null>;
 
   /**
    * 完了時アンケートを保存

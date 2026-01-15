@@ -33,6 +33,33 @@ describe('InMemorySurveyStorage', () => {
     });
   });
 
+  describe('saveScenarioComplete', () => {
+    it('should update existing record with scenarioCompletedAt', async () => {
+      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+      const scenarioSlug = 'night-crying';
+      const preSurvey: PreSurvey = {
+        wantToCatLevel: 3,
+      };
+
+      // 先にstartを保存
+      await storage.saveStartSurvey(sessionId, scenarioSlug, preSurvey);
+
+      // シナリオ完了を記録
+      const record = await storage.saveScenarioComplete(sessionId);
+
+      expect(record).not.toBeNull();
+      expect(record?.sessionId).toBe(sessionId);
+      expect(record?.scenarioCompletedAt).toBeDefined();
+      expect(record?.completedAt).toBeUndefined();
+    });
+
+    it('should return null if start record not found', async () => {
+      const record = await storage.saveScenarioComplete('nonexistent');
+
+      expect(record).toBeNull();
+    });
+  });
+
   describe('saveCompleteSurvey', () => {
     it('should update existing record with complete survey', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';

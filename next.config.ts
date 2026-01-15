@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
   // Turbopack configuration
   turbopack: {
     // Set root directory for worktree environment
-    root: __dirname,
+    root: process.cwd(),
   },
   webpack: (config, { isServer }) => {
     if (isServer) {

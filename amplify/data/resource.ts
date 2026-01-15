@@ -16,6 +16,7 @@ const schema = a.schema({
       preSurvey: a.json(),
       postSurvey: a.json(),
       startedAt: a.string().required(),
+      scenarioCompletedAt: a.string(),
       completedAt: a.string(),
     })
     .identifier(['sessionId'])

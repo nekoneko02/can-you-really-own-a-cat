@@ -8,6 +8,7 @@ import type {
   PostSurvey,
   StartResponse,
   CompleteResponse,
+  ScenarioCompleteResponse,
   ErrorResponse,
 } from './types';
 
@@ -55,6 +56,33 @@ export const surveyApiClient = {
     }
 
     return data as StartResponse;
+  },
+
+  /**
+   * シナリオ体験完了を記録（レポート表示時に呼び出す）
+   */
+  async markScenarioComplete(
+    scenarioSlug: string,
+    sessionId: string
+  ): Promise<ScenarioCompleteResponse> {
+    const response = await fetch(`/api/scenarios/${scenarioSlug}/scenario-complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sessionId,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const errorData = data as ErrorResponse;
+      throw new ApiError(errorData.error, errorData.code);
+    }
+
+    return data as ScenarioCompleteResponse;
   },
 
   /**
