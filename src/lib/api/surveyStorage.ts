@@ -1,6 +1,6 @@
 /**
  * アンケートデータストレージ
- * MVP段階ではログ出力（後でDB移行可能な設計）
+ * インターフェース定義とファクトリ関数
  */
 
 import type { PreSurvey, PostSurvey } from './types';
@@ -18,12 +18,9 @@ export interface SurveyRecord {
 }
 
 /**
- * アンケートデータストレージ
- * インメモリ保存 + ログ出力
+ * アンケートデータストレージインターフェース
  */
-export class SurveyStorage {
-  private records: Map<string, SurveyRecord> = new Map();
-
+export interface ISurveyStorage {
   /**
    * 開始時アンケートを保存
    */
@@ -31,20 +28,7 @@ export class SurveyStorage {
     sessionId: string,
     scenarioSlug: string,
     preSurvey: PreSurvey
-  ): SurveyRecord {
-    const now = new Date().toISOString();
-    const record: SurveyRecord = {
-      sessionId,
-      scenarioSlug,
-      preSurvey,
-      startedAt: now,
-    };
-
-    this.records.set(sessionId, record);
-    this.logRecord('START', record);
-
-    return record;
-  }
+  ): Promise<SurveyRecord>;
 
   /**
    * 完了時アンケートを保存
@@ -53,58 +37,27 @@ export class SurveyStorage {
   saveCompleteSurvey(
     sessionId: string,
     postSurvey: PostSurvey
-  ): SurveyRecord | null {
-    const existing = this.records.get(sessionId);
-    if (!existing) {
-      return null;
-    }
-
-    const now = new Date().toISOString();
-    const updated: SurveyRecord = {
-      ...existing,
-      postSurvey,
-      completedAt: now,
-    };
-
-    this.records.set(sessionId, updated);
-    this.logRecord('COMPLETE', updated);
-
-    return updated;
-  }
+  ): Promise<SurveyRecord | null>;
 
   /**
    * セッションIDで記録を検索
    */
-  findBySessionId(sessionId: string): SurveyRecord | null {
-    return this.records.get(sessionId) || null;
-  }
-
-  /**
-   * ログ出力
-   */
-  private logRecord(type: 'START' | 'COMPLETE', record: SurveyRecord): void {
-    const logEntry = {
-      type: `SURVEY_${type}`,
-      timestamp: new Date().toISOString(),
-      ...record,
-    };
-
-    // JSON形式でログ出力（後で分析可能な形式）
-    console.info(JSON.stringify(logEntry));
-  }
+  findBySessionId(sessionId: string): Promise<SurveyRecord | null>;
 }
 
 /**
  * シングルトンインスタンス
  */
-let instance: SurveyStorage | null = null;
+let instance: ISurveyStorage | null = null;
 
 /**
  * ストレージインスタンスを取得
+ * 常にDynamoDB実装を返す
  */
-export function getSurveyStorage(): SurveyStorage {
+export async function getSurveyStorage(): Promise<ISurveyStorage> {
   if (!instance) {
-    instance = new SurveyStorage();
+    const { DynamoDBSurveyStorage } = await import('../data/DynamoDBSurvey');
+    instance = new DynamoDBSurveyStorage();
   }
   return instance;
 }
@@ -114,4 +67,11 @@ export function getSurveyStorage(): SurveyStorage {
  */
 export function resetSurveyStorage(): void {
   instance = null;
+}
+
+/**
+ * テスト用: ストレージインスタンスを設定
+ */
+export function setSurveyStorage(storage: ISurveyStorage): void {
+  instance = storage;
 }

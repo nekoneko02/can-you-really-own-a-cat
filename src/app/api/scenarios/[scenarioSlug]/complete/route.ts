@@ -50,8 +50,8 @@ export async function POST(
     const { sessionId, postSurvey } = body as CompleteRequest;
 
     // アンケートデータを保存
-    const storage = getSurveyStorage();
-    const record = storage.saveCompleteSurvey(sessionId, postSurvey);
+    const storage = await getSurveyStorage();
+    const record = await storage.saveCompleteSurvey(sessionId, postSurvey);
 
     // 開始記録が見つからない場合
     if (!record) {

@@ -18,8 +18,11 @@ const nextConfig: NextConfig = {
   },
   // Phaser is client-side only - exclude from SSR
   serverExternalPackages: ['phaser'],
-  // Empty turbopack config to silence webpack/turbopack conflict warning
-  turbopack: {},
+  // Turbopack configuration
+  turbopack: {
+    // Set root directory for worktree environment
+    root: __dirname,
+  },
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Exclude Phaser from server-side bundling

@@ -3,12 +3,17 @@
  */
 
 import { POST } from '@/app/api/scenarios/[scenarioSlug]/complete/route';
-import { getSurveyStorage, resetSurveyStorage } from '@/lib/api/surveyStorage';
+import { resetSurveyStorage, setSurveyStorage } from '@/lib/api/surveyStorage';
+import { InMemorySurveyStorage } from '@/test/helpers/InMemorySurveyStorage';
 import { NextRequest } from 'next/server';
 
 describe('POST /api/scenarios/[scenarioSlug]/complete', () => {
+  let inMemoryStorage: InMemorySurveyStorage;
+
   beforeEach(() => {
     resetSurveyStorage();
+    inMemoryStorage = new InMemorySurveyStorage();
+    setSurveyStorage(inMemoryStorage);
   });
 
   const createRequest = (body: object) => {
@@ -19,9 +24,8 @@ describe('POST /api/scenarios/[scenarioSlug]/complete', () => {
     });
   };
 
-  const setupStartRecord = (sessionId: string) => {
-    const storage = getSurveyStorage();
-    storage.saveStartSurvey(sessionId, 'night-crying', {
+  const setupStartRecord = async (sessionId: string) => {
+    await inMemoryStorage.saveStartSurvey(sessionId, 'night-crying', {
       wantToCatLevel: 3,
       expectations: ['飼育の大変さを知りたい'],
     });
@@ -30,7 +34,7 @@ describe('POST /api/scenarios/[scenarioSlug]/complete', () => {
   describe('successful requests', () => {
     it('should return 200 with completedAt for valid request', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      setupStartRecord(sessionId);
+      await setupStartRecord(sessionId);
 
       const request = createRequest({
         sessionId,
@@ -55,7 +59,7 @@ describe('POST /api/scenarios/[scenarioSlug]/complete', () => {
 
     it('should accept request without optional freeText', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      setupStartRecord(sessionId);
+      await setupStartRecord(sessionId);
 
       const request = createRequest({
         sessionId,
@@ -76,7 +80,7 @@ describe('POST /api/scenarios/[scenarioSlug]/complete', () => {
   describe('validation errors', () => {
     it('should return 400 for invalid scenarioSlug', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      setupStartRecord(sessionId);
+      await setupStartRecord(sessionId);
 
       const request = createRequest({
         sessionId,
@@ -116,7 +120,7 @@ describe('POST /api/scenarios/[scenarioSlug]/complete', () => {
 
     it('should return 400 for invalid awareness', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      setupStartRecord(sessionId);
+      await setupStartRecord(sessionId);
 
       const request = createRequest({
         sessionId,
@@ -138,7 +142,7 @@ describe('POST /api/scenarios/[scenarioSlug]/complete', () => {
 
     it('should return 400 for freeText exceeding limit', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      setupStartRecord(sessionId);
+      await setupStartRecord(sessionId);
 
       const request = createRequest({
         sessionId,
