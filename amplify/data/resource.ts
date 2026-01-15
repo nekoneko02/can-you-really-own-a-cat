@@ -3,6 +3,10 @@ import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 /**
  * アンケートデータのスキーマ定義
  * テーブル論理名: can-you-own-a-cat-surveys
+ *
+ * 認証設定:
+ * - API Key を使用したパブリックアクセス（認証なし）
+ * - MVP段階では認証機能を使用しないため、publicApiKey を採用
  */
 const schema = a.schema({
   Survey: a
@@ -15,7 +19,7 @@ const schema = a.schema({
       completedAt: a.string(),
     })
     .identifier(['sessionId'])
-    .authorization((allow) => [allow.guest()]),
+    .authorization((allow) => [allow.publicApiKey()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -23,6 +27,9 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'identityPool',
+    defaultAuthorizationMode: 'apiKey',
+    apiKeyAuthorizationMode: {
+      expiresInDays: 365,
+    },
   },
 });
