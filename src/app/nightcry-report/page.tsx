@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { NightcryReportData } from '@/domain/scenarios/nightcry/NightcryScenarioState';
 import {
   ReportGenerator,
   type ReportContent,
 } from '@/domain/scenarios/nightcry/ReportGenerator';
+import { surveyApiClient } from '@/lib/api/client';
+import { getSession } from '@/lib/session/actions';
 
 /**
  * 夜泣きシナリオ最終レポート画面
@@ -18,6 +20,7 @@ export default function NightcryReportPage() {
   const router = useRouter();
   const [report, setReport] = useState<ReportContent | null>(null);
   const [loading, setLoading] = useState(true);
+  const scenarioCompleteCalledRef = useRef(false);
 
   useEffect(() => {
     const dataStr = localStorage.getItem('nightcryReportData');
@@ -31,6 +34,27 @@ export default function NightcryReportPage() {
       }
     }
     setLoading(false);
+  }, []);
+
+  // シナリオ完了をDynamoDBに記録
+  useEffect(() => {
+    async function markScenarioComplete() {
+      // 重複呼び出し防止
+      if (scenarioCompleteCalledRef.current) return;
+      scenarioCompleteCalledRef.current = true;
+
+      try {
+        const session = await getSession();
+        if (session?.sessionId) {
+          await surveyApiClient.markScenarioComplete('night-crying', session.sessionId);
+        }
+      } catch (error) {
+        // エラーはログ出力のみ（ユーザー体験に影響させない）
+        console.error('Failed to mark scenario complete:', error);
+      }
+    }
+
+    markScenarioComplete();
   }, []);
 
   if (loading) {
@@ -226,10 +250,10 @@ export default function NightcryReportPage() {
         {/* アクションボタン */}
         <div className="pt-8">
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/survey/end')}
             className="w-full bg-slate-700 text-slate-100 text-lg font-bold px-8 py-4 rounded-lg hover:bg-slate-600 transition-colors"
           >
-            トップに戻る
+            アンケートに回答する
           </button>
         </div>
       </main>

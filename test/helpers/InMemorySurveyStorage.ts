@@ -32,6 +32,26 @@ export class InMemorySurveyStorage implements ISurveyStorage {
   }
 
   /**
+   * シナリオ完了を記録
+   * @returns 更新されたレコード、開始記録がない場合はnull
+   */
+  async saveScenarioComplete(sessionId: string): Promise<SurveyRecord | null> {
+    const existing = this.records.get(sessionId);
+    if (!existing) {
+      return null;
+    }
+
+    const now = new Date().toISOString();
+    const updated: SurveyRecord = {
+      ...existing,
+      scenarioCompletedAt: now,
+    };
+
+    this.records.set(sessionId, updated);
+    return updated;
+  }
+
+  /**
    * 完了時アンケートを保存
    * @returns 更新されたレコード、開始記録がない場合はnull
    */

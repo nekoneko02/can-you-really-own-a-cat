@@ -71,6 +71,13 @@ export interface CompleteRequest {
 }
 
 /**
+ * シナリオ体験完了リクエスト（レポート表示時に記録）
+ */
+export interface ScenarioCompleteRequest {
+  sessionId: string;
+}
+
+/**
  * シナリオ開始レスポンス
  */
 export interface StartResponse {
@@ -84,6 +91,13 @@ export interface StartResponse {
 export interface CompleteResponse {
   success: boolean;
   completedAt: string;
+}
+
+/**
+ * シナリオ体験完了レスポンス
+ */
+export interface ScenarioCompleteResponse {
+  scenarioCompletedAt: string;
 }
 
 /**

@@ -10,6 +10,7 @@ import {
   isValidOtherExpectation,
   isValidFreeText,
   validateStartRequest,
+  validateScenarioCompleteRequest,
   validateCompleteRequest,
 } from '@/lib/api/validation';
 
@@ -218,6 +219,45 @@ describe('API Validation', () => {
       const error = validateStartRequest(request);
       expect(error).not.toBeNull();
       expect(error?.code).toBe('VALIDATION_ERROR');
+    });
+  });
+
+  describe('validateScenarioCompleteRequest', () => {
+    const validSessionId = '550e8400-e29b-41d4-a716-446655440000';
+
+    it('should return null for valid request', () => {
+      const request = {
+        sessionId: validSessionId,
+      };
+      expect(validateScenarioCompleteRequest(request)).toBeNull();
+    });
+
+    it('should return error for null body', () => {
+      const error = validateScenarioCompleteRequest(null);
+      expect(error).not.toBeNull();
+      expect(error?.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('should return error for non-object body', () => {
+      const error = validateScenarioCompleteRequest('invalid');
+      expect(error).not.toBeNull();
+      expect(error?.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('should return error for missing sessionId', () => {
+      const request = {};
+      const error = validateScenarioCompleteRequest(request);
+      expect(error).not.toBeNull();
+      expect(error?.code).toBe('INVALID_SESSION_ID');
+    });
+
+    it('should return error for invalid sessionId format', () => {
+      const request = {
+        sessionId: 'invalid-uuid',
+      };
+      const error = validateScenarioCompleteRequest(request);
+      expect(error).not.toBeNull();
+      expect(error?.code).toBe('INVALID_SESSION_ID');
     });
   });
 
