@@ -9,19 +9,29 @@ export interface SceneBackgroundProps {
   children?: React.ReactNode;
 }
 
-const backgroundStyles: Record<TimeOfDay, string> = {
-  night: 'bg-night',
-  dawn: 'bg-dawn',
-  day: 'bg-day',
+/**
+ * 時間帯と背景画像のマッピング
+ * - night: 夜の部屋 (room_night.png)
+ * - dawn: 深夜の部屋 (room_midnight.png)
+ * - day: 朝の部屋 (room_morning.png)
+ */
+const backgroundImages: Record<TimeOfDay, string> = {
+  night: '/assets/backgrounds/room_night.png',
+  dawn: '/assets/backgrounds/room_midnight.png',
+  day: '/assets/backgrounds/room_morning.png',
 };
 
 export function SceneBackground({ timeOfDay, children }: SceneBackgroundProps) {
   return (
     <div
       data-testid="scene-background"
-      className={`scene-background min-h-screen w-full transition-background ${backgroundStyles[timeOfDay]}`}
+      className="scene-background min-h-screen w-full transition-background"
       style={{
-        transition: 'background-color 1s ease-in-out',
+        backgroundImage: `url('${backgroundImages[timeOfDay]}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        transition: 'background-image 1s ease-in-out',
       }}
     >
       {children}
