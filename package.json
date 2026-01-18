@@ -16,7 +16,6 @@
     "aws-amplify": "^6.15.9",
     "iron-session": "^8.0.4",
     "next": "^16.0.7",
-    "phaser": "^3.90.0",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },
