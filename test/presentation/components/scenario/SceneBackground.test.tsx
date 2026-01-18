@@ -1,28 +1,54 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { SceneBackground, TimeOfDay } from '@/components/scenario/SceneBackground';
 
 describe('SceneBackground', () => {
-  describe('時間帯による背景色', () => {
-    it('nightの場合、暗い青の背景が表示される', () => {
+  describe('時間帯による背景画像', () => {
+    it('nightの場合、room_night.pngが背景として表示される', () => {
       render(<SceneBackground timeOfDay="night" />);
 
       const background = screen.getByTestId('scene-background');
-      expect(background).toHaveClass('bg-night');
+      expect(background).toHaveStyle({
+        backgroundImage: "url('/assets/backgrounds/room_night.png')",
+      });
     });
 
-    it('dawnの場合、薄明るい背景が表示される', () => {
+    it('dawnの場合、room_midnight.pngが背景として表示される', () => {
       render(<SceneBackground timeOfDay="dawn" />);
 
       const background = screen.getByTestId('scene-background');
-      expect(background).toHaveClass('bg-dawn');
+      expect(background).toHaveStyle({
+        backgroundImage: "url('/assets/backgrounds/room_midnight.png')",
+      });
     });
 
-    it('dayの場合、明るい背景が表示される', () => {
+    it('dayの場合、room_morning.pngが背景として表示される', () => {
       render(<SceneBackground timeOfDay="day" />);
 
       const background = screen.getByTestId('scene-background');
-      expect(background).toHaveClass('bg-day');
+      expect(background).toHaveStyle({
+        backgroundImage: "url('/assets/backgrounds/room_morning.png')",
+      });
+    });
+  });
+
+  describe('背景画像のスタイリング', () => {
+    it('背景画像がcover指定で表示される', () => {
+      render(<SceneBackground timeOfDay="night" />);
+
+      const background = screen.getByTestId('scene-background');
+      expect(background).toHaveStyle({
+        backgroundSize: 'cover',
+      });
+    });
+
+    it('背景画像が中央配置される', () => {
+      render(<SceneBackground timeOfDay="night" />);
+
+      const background = screen.getByTestId('scene-background');
+      expect(background).toHaveStyle({
+        backgroundPosition: 'center',
+      });
     });
   });
 
