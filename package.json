@@ -17,7 +17,8 @@
     "iron-session": "^8.0.4",
     "next": "^16.0.7",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "react-markdown": "^9.0.1"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.19.0",

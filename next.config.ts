@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   // Temporarily disable React Strict Mode to avoid Phaser initialization issues
@@ -21,7 +22,7 @@ const nextConfig: NextConfig = {
   // Turbopack configuration
   turbopack: {
     // Set root directory for worktree environment
-    root: process.cwd(),
+    root: path.resolve(__dirname),
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
