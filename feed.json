@@ -1,0 +1,13 @@
+{
+  "platform": "site",
+  "items": [
+    {
+      "id": "can-you-really-own-a-cat",
+      "title": "君はねこを飼えるのか？",
+      "url": "https://can-you-really-own-a-cat.neko-engineer.com/",
+      "date_published": "2025-02-01",
+      "summary": "猫を飼うか迷っていますか？\n\n夜中の鳴き声、突然の病院代、毎日のお世話——\n飼ってから気づく日常を、ここで体験してみてください。",
+      "tags": ["プロダクト", "個人開発"]
+    }
+  ]
+}
